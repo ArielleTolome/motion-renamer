@@ -3,6 +3,7 @@ const API = '';
 // State
 let files = [];
 let settings = {};
+let analysisPollInterval = null;
 
 // Glossary options
 const GLOSSARY = {
@@ -43,6 +44,21 @@ function setupTabs() {
   });
 }
 
+function updateTabBadges() {
+  const counts = { upload: files.length, table: files.length, files: files.length };
+  $$('.nav-tab').forEach(tab => {
+    const key = tab.dataset.tab;
+    const badge = tab.querySelector('.tab-badge');
+    if (badge) badge.remove();
+    if (counts[key] > 0) {
+      const span = document.createElement('span');
+      span.className = 'tab-badge';
+      span.textContent = counts[key];
+      tab.appendChild(span);
+    }
+  });
+}
+
 // Drop Zone
 function setupDropZone() {
   const zone = $('#dropZone');
@@ -63,6 +79,7 @@ function setupDropZone() {
   input.addEventListener('change', () => { handleFiles(input.files); input.value = ''; });
 
   $('#analyzeAllBtn').addEventListener('click', analyzeAll);
+  $('#clearAllBtn').addEventListener('click', clearAll);
 }
 
 async function handleFiles(fileList) {
@@ -75,6 +92,7 @@ async function handleFiles(fileList) {
     const uploaded = await res.json();
     files = [...files, ...uploaded];
     renderUploadList();
+    updateTabBadges();
     $('#uploadActions').style.display = 'flex';
   } catch (err) {
     console.error('Upload failed:', err);
@@ -92,9 +110,14 @@ function renderUploadList() {
         ${f.analysisStatus === 'analyzing' ? '<span class="spinner"></span>' : ''}
         ${f.analysisStatus}
       </span>
-      <button class="btn btn-sm btn-ghost" onclick="analyzeSingle('${f.id}')">Analyze</button>
+      ${f.analysisStatus === 'error' || f.analysisStatus === 'done' ? `<button class="btn btn-sm btn-ghost" onclick="analyzeSingle('${f.id}')">Re-analyze</button>` : ''}
+      ${f.analysisStatus === 'pending' ? `<button class="btn btn-sm btn-ghost" onclick="analyzeSingle('${f.id}')">Analyze</button>` : ''}
     </div>
   `).join('');
+
+  if (files.length > 0) {
+    $('#uploadActions').style.display = 'flex';
+  }
 }
 
 async function analyzeSingle(id) {
@@ -107,38 +130,89 @@ async function analyzeSingle(id) {
     const res = await fetch(`${API}/analyze/${id}`, { method: 'POST' });
     const updated = await res.json();
     const idx = files.findIndex(f => f.id === id);
-    if (idx !== -1) files[idx] = updated;
+    if (idx !== -1) files[idx] = updated.sidecar || updated;
   } catch (err) {
     const idx = files.findIndex(f => f.id === id);
     if (idx !== -1) files[idx].analysisStatus = 'error';
   }
   renderUploadList();
+  updateTabBadges();
 }
 
 async function analyzeAll() {
   try {
     const res = await fetch(`${API}/analyze-all`, { method: 'POST' });
     const data = await res.json();
-    // Mark queued items as analyzing
     for (const id of data.ids) {
       const f = files.find(x => x.id === id);
       if (f) f.analysisStatus = 'analyzing';
     }
     renderUploadList();
-    // Poll for updates
-    if (data.queued > 0) pollAnalysis();
+    if (data.queued > 0) startAnalysisPoll();
   } catch (err) {
     console.error('Analyze all failed:', err);
   }
 }
 
-function pollAnalysis() {
-  const interval = setInterval(async () => {
-    await loadFiles();
-    renderUploadList();
-    const analyzing = files.some(f => f.analysisStatus === 'analyzing');
-    if (!analyzing) clearInterval(interval);
-  }, 3000);
+function startAnalysisPoll() {
+  if (analysisPollInterval) clearInterval(analysisPollInterval);
+  showProgressBar();
+  analysisPollInterval = setInterval(async () => {
+    try {
+      const statusRes = await fetch(`${API}/analyze-status`);
+      const status = await statusRes.json();
+      updateProgressBar(status);
+      // Also refresh file list to update chips
+      await loadFiles();
+      if (status.analyzing === 0 && status.pending === 0) {
+        clearInterval(analysisPollInterval);
+        analysisPollInterval = null;
+        hideProgressBar();
+      }
+    } catch (err) {
+      console.error('Poll failed:', err);
+    }
+  }, 2000);
+}
+
+function showProgressBar() {
+  let bar = $('#analysisProgress');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'analysisProgress';
+    bar.className = 'analysis-progress';
+    bar.innerHTML = '<div class="progress-track"><div class="progress-fill"></div></div><span class="progress-text"></span>';
+    $('#uploadActions').after(bar);
+  }
+  bar.style.display = 'flex';
+}
+
+function updateProgressBar(status) {
+  const bar = $('#analysisProgress');
+  if (!bar) return;
+  const pct = status.total > 0 ? ((status.done + status.error) / status.total * 100) : 0;
+  bar.querySelector('.progress-fill').style.width = `${pct}%`;
+  bar.querySelector('.progress-text').textContent = `${status.done + status.error}/${status.total} complete (${status.analyzing} analyzing, ${status.pending} pending${status.error > 0 ? `, ${status.error} errors` : ''})`;
+}
+
+function hideProgressBar() {
+  const bar = $('#analysisProgress');
+  if (bar) bar.style.display = 'none';
+}
+
+async function clearAll() {
+  if (!confirm('Delete ALL files? This cannot be undone.')) return;
+  for (const f of [...files]) {
+    try {
+      await fetch(`${API}/files/${f.id}`, { method: 'DELETE' });
+    } catch {}
+  }
+  files = [];
+  renderUploadList();
+  renderTable();
+  renderFilesGrid();
+  updateTabBadges();
+  $('#uploadActions').style.display = 'none';
 }
 
 // Load files from server
@@ -149,6 +223,7 @@ async function loadFiles() {
     renderUploadList();
     renderTable();
     renderFilesGrid();
+    updateTabBadges();
   } catch (err) {
     console.error('Failed to load files:', err);
   }
@@ -181,10 +256,10 @@ function renderTable() {
       <td>${fieldSelect(f.id, 'lp', GLOSSARY.lp, fld.lp)}</td>
       <td>${fieldSelect(f.id, 'audio', GLOSSARY.audio, fld.audio)}</td>
       <td>
-        <span class="proposed-name" title="${f.proposedName || 'Pending analysis'}" onclick="editProposedName(this, '${f.id}')">${f.proposedName || '—'}</span>
-        ${f.proposedName ? `<button class="btn btn-sm btn-ghost" onclick="copyName('${f.id}')" title="Copy">📋</button>` : ''}
+        <span class="proposed-name copyable" title="${f.proposedName || 'Pending analysis'}" onclick="copyProposedName(this, '${f.id}')">${f.proposedName || '—'}</span>
       </td>
       <td class="table-actions">
+        ${f.analysisStatus === 'error' || f.analysisStatus === 'done' ? `<button class="btn btn-sm btn-ghost" onclick="analyzeSingle('${f.id}')" title="Re-analyze">🔄</button>` : ''}
         ${f.proposedName ? `<button class="btn btn-sm btn-primary" onclick="downloadRenamed('${f.id}')">⬇</button>` : ''}
         <button class="btn btn-sm btn-danger" onclick="deleteFile('${f.id}')">🗑</button>
       </td>
@@ -198,11 +273,11 @@ function renderTable() {
 }
 
 function previewThumb(f) {
-  const src = `${API}/uploads/${f.storedFilename}`;
+  const src = `${API}/uploads/${encodeURIComponent(f.storedFilename)}`;
   if (f.mimeType.startsWith('image/')) {
     return `<img class="table-preview" src="${src}" alt="">`;
   } else if (f.mimeType.startsWith('video/')) {
-    return `<video class="table-preview" src="${src}" muted></video>`;
+    return `<video class="table-preview video-thumb" src="${src}" muted preload="metadata" data-thumb="true"></video>`;
   }
   return '<div class="table-preview"></div>';
 }
@@ -250,11 +325,32 @@ function editProposedName(el, id) {
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
 }
 
+function copyProposedName(el, id) {
+  const file = files.find(f => f.id === id);
+  if (!file?.proposedName) return;
+  navigator.clipboard.writeText(file.proposedName);
+  showToast('Copied!');
+}
+
 function copyName(id) {
   const file = files.find(f => f.id === id);
   if (file?.proposedName) {
     navigator.clipboard.writeText(file.proposedName);
+    showToast('Copied!');
   }
+}
+
+function showToast(message) {
+  let toast = $('#toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
 function downloadRenamed(id) {
@@ -272,6 +368,7 @@ async function deleteFile(id) {
   renderUploadList();
   renderTable();
   renderFilesGrid();
+  updateTabBadges();
 }
 
 // Files Grid
@@ -284,14 +381,14 @@ function renderFilesGrid() {
   );
 
   grid.innerHTML = filtered.map(f => {
-    const src = `${API}/uploads/${f.storedFilename}`;
+    const src = `${API}/uploads/${encodeURIComponent(f.storedFilename)}`;
     let thumb;
     if (f.mimeType.startsWith('image/')) {
       thumb = `<img class="file-card-thumb" src="${src}" alt="">`;
     } else if (f.mimeType.startsWith('video/')) {
-      thumb = `<video class="file-card-thumb" src="${src}" muted></video>`;
+      thumb = `<video class="file-card-thumb video-thumb" src="${src}" muted preload="metadata" data-thumb="true"></video>`;
     } else {
-      thumb = `<div class="file-card-thumb"></div>`;
+      thumb = `<div class="file-card-thumb file-card-thumb-placeholder">📄</div>`;
     }
     return `<div class="file-card" onclick="openLightbox('${f.id}')">
       ${thumb}
@@ -306,8 +403,41 @@ function renderFilesGrid() {
     </div>`;
   }).join('');
 
+  // Generate video thumbnails
+  requestAnimationFrame(() => generateVideoThumbnails());
+
   $('#filesSearch')?.removeEventListener('input', renderFilesGrid);
   $('#filesSearch')?.addEventListener('input', renderFilesGrid);
+}
+
+function generateVideoThumbnails() {
+  document.querySelectorAll('video[data-thumb="true"]').forEach(video => {
+    video.removeAttribute('data-thumb');
+    video.addEventListener('loadeddata', function() {
+      try {
+        this.currentTime = 1;
+      } catch {}
+    });
+    video.addEventListener('seeked', function() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.videoWidth || 320;
+        canvas.height = this.videoHeight || 180;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.className = this.className;
+        img.alt = 'Video thumbnail';
+        if (this.parentNode) {
+          this.parentNode.replaceChild(img, this);
+        }
+      } catch {
+        // Fallback: keep video element as-is
+      }
+    });
+  });
 }
 
 function setupViewToggle() {
@@ -333,7 +463,7 @@ function openLightbox(id) {
   const modal = $('#lightboxModal');
   const preview = $('#lightboxPreview');
   const info = $('#lightboxInfo');
-  const src = `${API}/uploads/${file.storedFilename}`;
+  const src = `${API}/preview/${file.id}`;
 
   $('#lightboxTitle').textContent = file.originalName;
 

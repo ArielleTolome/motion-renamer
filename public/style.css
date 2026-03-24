@@ -396,6 +396,68 @@ main { padding: 24px; max-width: 1600px; margin: 0 auto; }
 .lightbox-field { font-size: 13px; }
 .lightbox-field span { color: var(--text2); }
 
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--success);
+  color: #000;
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 200;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* Tab Badge */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  background: var(--cyan);
+  color: #000;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 6px;
+  padding: 0 5px;
+}
+
+/* Analysis Progress Bar */
+.analysis-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 4px;
+  transition: width 0.3s;
+  width: 0%;
+}
+.progress-text { font-size: 13px; color: var(--text2); white-space: nowrap; }
+
 /* Responsive */
 @media (max-width: 768px) {
   .topnav { padding: 0 12px; gap: 8px; }

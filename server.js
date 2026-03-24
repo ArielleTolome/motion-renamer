@@ -50,9 +50,7 @@ const storage = multer.diskStorage({
   destination: UPLOADS_DIR,
   filename: (req, file, cb) => {
     const id = uuidv4();
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext);
-    cb(null, `${id}-${base}${ext}`);
+    cb(null, `${id}||${file.originalname}`);
   }
 });
 const upload = multer({ storage });
@@ -64,7 +62,7 @@ function getSidecarPath(id) {
 
 function findFileById(id) {
   const files = fs.readdirSync(UPLOADS_DIR);
-  const match = files.find(f => f.startsWith(id) && !f.endsWith('.json'));
+  const match = files.find(f => f.startsWith(id + '||') && !f.endsWith('.json'));
   return match ? path.join(UPLOADS_DIR, match) : null;
 }
 
@@ -107,7 +105,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
   const settings = loadSettings();
   const results = req.files.map(f => {
     const filename = f.filename;
-    const id = filename.split('-')[0];
+    const id = filename.split('||')[0];
     // Reconstruct original name from stored filename
     const ext = path.extname(f.originalname);
     const sidecar = {
@@ -287,6 +285,29 @@ Return ONLY valid JSON, no markdown, no explanation.`;
   }
 });
 
+// GET /preview/:id
+app.get('/preview/:id', (req, res) => {
+  const filePath = findFileById(req.params.id);
+  if (!filePath) return res.status(404).json({ error: 'Not found' });
+  res.sendFile(filePath);
+});
+
+// GET /analyze-status
+app.get('/analyze-status', (req, res) => {
+  const files = fs.readdirSync(UPLOADS_DIR).filter(f => f.endsWith('.json'));
+  const counts = { total: 0, done: 0, analyzing: 0, pending: 0, error: 0 };
+  for (const f of files) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(UPLOADS_DIR, f), 'utf-8'));
+      if (!findFileById(data.id)) continue;
+      counts.total++;
+      const s = data.analysisStatus || 'pending';
+      if (counts[s] !== undefined) counts[s]++;
+    } catch {}
+  }
+  res.json(counts);
+});
+
 // GET /download/:id
 app.get('/download/:id', (req, res) => {
   const { id } = req.params;
@@ -398,7 +419,14 @@ app.post('/settings', (req, res) => {
 
 // Serve uploaded files for preview
 app.use('/uploads', express.static(UPLOADS_DIR));
+// Fallback: serve uploaded file by stored filename
+app.get('/uploads/:filename', (req, res) => {
+  const filePath = path.join(UPLOADS_DIR, req.params.filename);
+  if (fs.existsSync(filePath)) return res.sendFile(filePath);
+  res.status(404).json({ error: 'Not found' });
+});
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Motion Renamer running at http://localhost:${PORT}`);
+  console.log(`Tailscale access: http://100.108.195.97:${PORT}`);
 });
