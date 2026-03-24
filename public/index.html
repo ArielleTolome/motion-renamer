@@ -3,168 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Motion Renamer</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Precision Curator — Asset Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-background": "#191c1d", "outline": "#737783", "inverse-surface": "#2e3132",
+            "surface-tint": "#3c5d9c", "surface": "#f8f9fa", "secondary-container": "#cbe7f5",
+            "surface-variant": "#e1e3e4", "on-error": "#ffffff", "inverse-primary": "#aec6ff",
+            "primary-container": "#284a88", "surface-container": "#edeeef",
+            "on-secondary-container": "#4e6874", "secondary": "#48626e",
+            "on-surface-variant": "#434652", "surface-container-lowest": "#ffffff",
+            "error": "#ba1a1a", "surface-container-high": "#e7e8e9", "primary": "#073370",
+            "outline-variant": "#c3c6d4", "secondary-fixed": "#cbe7f5", "on-surface": "#191c1d",
+            "tertiary-container": "#99003f", "primary-fixed": "#d8e2ff", "tertiary": "#6f002c",
+            "on-tertiary-container": "#ffa2b4", "error-container": "#ffdad6",
+            "background": "#f8f9fa", "on-tertiary": "#ffffff",
+            "surface-container-highest": "#e1e3e4", "surface-dim": "#d9dadb",
+            "surface-container-low": "#f3f4f5", "primary-fixed-dim": "#aec6ff",
+            "on-primary-container": "#9ebcff", "on-primary": "#ffffff",
+            "on-secondary": "#ffffff", "on-error-container": "#93000a",
+          },
+          fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-  <nav class="topnav">
-    <div class="nav-brand">Motion Renamer</div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" data-tab="upload">Upload</button>
-      <button class="nav-tab" data-tab="table">Table</button>
-      <button class="nav-tab" data-tab="files">Files</button>
+<body class="bg-surface text-on-surface">
+
+  <!-- Sidebar -->
+  <aside class="sidebar fixed top-0 left-0 h-full w-64 bg-surface-container-low py-6 pl-4 z-50 hidden md:flex flex-col">
+    <div class="pr-4 mb-8">
+      <h1 class="font-headline font-black text-primary text-xl leading-tight">Precision Curator</h1>
+      <p class="text-[10px] uppercase tracking-[0.05rem] text-outline mt-1">Asset Management</p>
     </div>
-    <button class="nav-settings" id="settingsBtn" title="Settings">⚙️</button>
+
+    <nav class="flex-1 flex flex-col gap-1">
+      <a href="#dashboard" class="nav-link" data-page="dashboard">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#upload" class="nav-link" data-page="upload">
+        <span class="material-symbols-outlined text-[20px]">cloud_upload</span>
+        <span>Upload</span>
+      </a>
+      <a href="#files" class="nav-link" data-page="files">
+        <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+        <span>Files</span>
+      </a>
+      <a href="#settings" class="nav-link" data-page="settings">
+        <span class="material-symbols-outlined text-[20px]">settings</span>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="pr-4 mt-auto">
+      <a href="#upload" class="signature-gradient text-white text-sm font-semibold rounded-lg px-4 py-3 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+        <span class="material-symbols-outlined text-[20px]">cloud_upload</span>
+        New Upload
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main id="main-content" class="md:ml-64 min-h-screen"></main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-nav fixed bottom-0 left-0 right-0 bg-surface-container-lowest z-50 hidden md:hidden justify-around py-2" style="box-shadow:0 -2px 8px rgba(0,0,0,0.06);">
+    <a href="#dashboard" class="nav-link-mobile flex flex-col items-center gap-0.5 text-[10px] text-on-surface-variant" data-page="dashboard">
+      <span class="material-symbols-outlined text-[22px]">dashboard</span>Dashboard
+    </a>
+    <a href="#upload" class="nav-link-mobile flex flex-col items-center gap-0.5 text-[10px] text-on-surface-variant" data-page="upload">
+      <span class="material-symbols-outlined text-[22px]">cloud_upload</span>Upload
+    </a>
+    <a href="#files" class="nav-link-mobile flex flex-col items-center gap-0.5 text-[10px] text-on-surface-variant" data-page="files">
+      <span class="material-symbols-outlined text-[22px]">inventory_2</span>Files
+    </a>
+    <a href="#settings" class="nav-link-mobile flex flex-col items-center gap-0.5 text-[10px] text-on-surface-variant" data-page="settings">
+      <span class="material-symbols-outlined text-[22px]">settings</span>Settings
+    </a>
   </nav>
 
-  <!-- Stats Bar -->
-  <div class="stats-bar" id="statsBar">
-    <span id="statsText">0 files</span>
-    <button class="btn btn-sm btn-ghost" id="refreshStatsBtn" title="Refresh">↻</button>
-  </div>
+  <div id="toast-container" class="toast-container"></div>
+  <div id="lightbox" class="lightbox hidden"></div>
 
-  <main>
-    <!-- Upload Tab -->
-    <section class="tab-content active" id="tab-upload">
-      <div class="drop-zone" id="dropZone">
-        <div class="drop-zone-icon">📤</div>
-        <h2>Drop images &amp; videos here</h2>
-        <p class="drop-zone-formats">JPG, PNG, GIF, WEBP, MP4, MOV, AVI, WEBM</p>
-        <button class="btn btn-primary" id="browseBtn">Browse Files</button>
-        <input type="file" id="fileInput" multiple accept="image/*,video/*" hidden>
-      </div>
-
-      <div class="upload-actions" id="uploadActions" style="display:none;">
-        <button class="btn btn-accent" id="analyzeAllBtn">🔍 Analyze All</button>
-        <button class="btn btn-danger" id="clearAllBtn">🗑 Clear All</button>
-      </div>
-
-      <div class="upload-list" id="uploadList"></div>
-    </section>
-
-    <!-- Table Tab -->
-    <section class="tab-content" id="tab-table">
-      <div class="table-toolbar">
-        <input type="text" class="search-input" id="tableSearch" placeholder="Search files...">
-        <button class="btn btn-accent" id="downloadAllBtn">📦 Download All (ZIP)</button>
-        <button class="btn btn-primary" id="downloadSelectedBtn" disabled>⬇ Download Selected</button>
-        <button class="btn btn-danger" id="bulkDeleteBtn" disabled>🗑 Delete Selected</button>
-      </div>
-      <div class="table-wrapper">
-        <table class="data-table" id="dataTable">
-          <thead>
-            <tr>
-              <th><input type="checkbox" id="selectAllCheckbox"></th>
-              <th>#</th>
-              <th>Preview</th>
-              <th>Original Name</th>
-              <th>Source</th>
-              <th>Format</th>
-              <th>Messaging</th>
-              <th>Hook</th>
-              <th>Product</th>
-              <th>Talent</th>
-              <th>Gender</th>
-              <th>Length</th>
-              <th>Offer</th>
-              <th>LP</th>
-              <th>Audio</th>
-              <th>Proposed Name</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Files Tab -->
-    <section class="tab-content" id="tab-files">
-      <div class="files-toolbar">
-        <input type="text" class="search-input" id="filesSearch" placeholder="Search files...">
-        <div class="view-toggle">
-          <button class="view-btn active" data-view="grid" title="Grid view">▦</button>
-          <button class="view-btn" data-view="list" title="List view">☰</button>
-        </div>
-      </div>
-      <div class="files-grid" id="filesGrid"></div>
-      <!-- Selection toolbar for Files grid -->
-      <div class="selection-toolbar" id="selectionToolbar" style="display:none;">
-        <span id="selectionCount">0 selected</span>
-        <button class="btn btn-sm btn-primary" id="selToolbarDownload">⬇ Download ZIP</button>
-        <button class="btn btn-sm btn-danger" id="selToolbarDelete">🗑 Delete</button>
-      </div>
-    </section>
-  </main>
-
-  <!-- Settings Modal -->
-  <div class="modal-overlay" id="settingsModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Settings</h2>
-        <button class="modal-close" id="closeSettings">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="setting-group">
-          <label>Sources</label>
-          <div class="chips" id="sourceChips"></div>
-          <div class="chip-add">
-            <input type="text" id="newSource" placeholder="Add source (e.g. s-name)">
-            <button class="btn btn-sm" id="addSourceBtn">Add</button>
-          </div>
-        </div>
-        <div class="setting-group">
-          <label>Products</label>
-          <div class="chips" id="productChips"></div>
-          <div class="chip-add">
-            <input type="text" id="newProduct" placeholder="Add product (e.g. p-name)">
-            <button class="btn btn-sm" id="addProductBtn">Add</button>
-          </div>
-        </div>
-        <div class="setting-group">
-          <label>Talent</label>
-          <div class="chips" id="talentChips"></div>
-          <div class="chip-add">
-            <input type="text" id="newTalent" placeholder="Add talent name (e.g. AI)">
-            <button class="btn btn-sm" id="addTalentBtn">Add</button>
-          </div>
-        </div>
-        <div class="setting-group">
-          <label>Default Source</label>
-          <select id="defaultSource" class="field-select"></select>
-        </div>
-        <div class="setting-group">
-          <label>Default Product</label>
-          <select id="defaultProduct" class="field-select"></select>
-        </div>
-        <div class="setting-group">
-          <label>Default Talent</label>
-          <select id="defaultTalent" class="field-select"></select>
-        </div>
-        <div class="setting-group">
-          <button class="btn btn-ghost" id="resetSettingsBtn">Reset to Defaults</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Lightbox Modal -->
-  <div class="modal-overlay" id="lightboxModal">
-    <div class="modal modal-lg">
-      <div class="modal-header">
-        <h2 id="lightboxTitle">File Preview</h2>
-        <button class="modal-close" id="closeLightbox">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="lightbox-preview" id="lightboxPreview"></div>
-        <div class="lightbox-info" id="lightboxInfo"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="lightboxDownload">Download Renamed</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

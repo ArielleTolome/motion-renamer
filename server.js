@@ -15,14 +15,41 @@ const RENAMED_DIR = path.join(__dirname, 'renamed');
 const SETTINGS_FILE = path.join(__dirname, 'settings.json');
 const GEMINI_PATH = '/Users/arieltolome/.nvm/versions/node/v22.22.1/bin/gemini';
 
+// File size limit: 500MB
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
+
+// Allowed MIME types
+const ALLOWED_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif',
+  'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm',
+  'video/x-matroska', 'video/x-m4v'
+]);
+
+// Allowed extensions
+const ALLOWED_EXTENSIONS = new Set([
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif',
+  '.mp4', '.mov', '.avi', '.webm', '.mkv', '.m4v'
+]);
+
+// Gemini rate limiting: max 3 concurrent
+let geminiActive = 0;
+const MAX_CONCURRENT_GEMINI = 3;
+const geminiQueue = [];
+
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 fs.mkdirSync(RENAMED_DIR, { recursive: true });
 
 const DEFAULT_SETTINGS = {
-  sources: ['s-ariel', 's-a-teamwork', 's-data-grande'],
+  sources: ['s-ariel', 's-a-teamwork', 's-data-grande', 's-creativeagency1', 's-creativeagency2'],
   products: ['p-medicare-english', 'p-medicare-spanish', 'p-aca-english', 'p-aca-spanish'],
+  talents: ['AI', 'Ariel'],
+  platforms: ['Meta', 'TikTok', 'YouTube', 'Native'],
   defaultSource: 's-ariel',
-  defaultProduct: 'p-medicare-english'
+  defaultProduct: 'p-medicare-english',
+  defaultTalent: 'AI',
+  defaultPlatform: 'Meta',
+  defaultOffer: 'o-None',
+  defaultLp: 'lp-pdp',
 };
 
 function loadSettings() {
@@ -45,7 +72,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Multer config
+// Multer config with file size limit and type validation
 const storage = multer.diskStorage({
   destination: UPLOADS_DIR,
   filename: (req, file, cb) => {
@@ -53,7 +80,34 @@ const storage = multer.diskStorage({
     cb(null, `${id}||${file.originalname}`);
   }
 });
-const upload = multer({ storage });
+
+function fileFilter(req, file, cb) {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!ALLOWED_TYPES.has(file.mimetype) && !ALLOWED_EXTENSIONS.has(ext)) {
+    return cb(new Error(`File type not allowed: ${file.mimetype} (${ext}). Accepted: jpg, png, gif, webp, avif, mp4, mov, avi, webm, mkv, m4v`));
+  }
+  cb(null, true);
+}
+
+const upload = multer({
+  storage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter
+});
+
+// Multer error handler
+function handleMulterError(err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB.` });
+    }
+    return res.status(400).json({ error: err.message });
+  }
+  if (err && err.message && err.message.startsWith('File type not allowed')) {
+    return res.status(415).json({ error: err.message });
+  }
+  next(err);
+}
 
 // Helpers
 function getSidecarPath(id) {
@@ -79,12 +133,16 @@ function saveSidecar(id, data) {
   fs.writeFileSync(getSidecarPath(id), JSON.stringify(data, null, 2));
 }
 
+function sanitizeFilename(str) {
+  return str.replace(/[^a-zA-Z0-9._-]/g, '-');
+}
+
 function buildProposedName(sidecar) {
   const f = sidecar.fields || {};
   const ext = path.extname(sidecar.originalName);
   const base = path.basename(sidecar.originalName, ext);
   const parts = [
-    base,
+    sanitizeFilename(base),
     f.source || 's-ariel',
     `as-${f.format || 'Advertorial'}`,
     `m-${f.messaging || 'tagline'}`,
@@ -100,14 +158,110 @@ function buildProposedName(sidecar) {
   return parts.join('_') + ext;
 }
 
+// Duplicate detection helper
+function findDuplicate(originalName, size) {
+  const jsonFiles = fs.readdirSync(UPLOADS_DIR).filter(f => f.endsWith('.json'));
+  for (const f of jsonFiles) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(UPLOADS_DIR, f), 'utf-8'));
+      if (data.originalName === originalName && data.size === size && findFileById(data.id)) {
+        return data;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+// Gemini queue helpers
+function acquireGeminiSlot() {
+  return new Promise(resolve => {
+    if (geminiActive < MAX_CONCURRENT_GEMINI) {
+      geminiActive++;
+      resolve();
+    } else {
+      geminiQueue.push(resolve);
+    }
+  });
+}
+
+function releaseGeminiSlot() {
+  geminiActive--;
+  if (geminiQueue.length > 0 && geminiActive < MAX_CONCURRENT_GEMINI) {
+    geminiActive++;
+    const next = geminiQueue.shift();
+    next();
+  }
+}
+
+const GEMINI_PROMPT = `Analyze this creative asset (image or video) for a UGC ad naming convention system. Return ONLY a JSON object with these exact fields:
+- "format": one of ["Advertorial", "UGCMashup", "Unboxing", "podcast", "StreetInterview", "BeforeAfter"]
+- "messaging": one of ["FOMO", "tagline", "benefit1", "founderstory", "problemsolution"]
+- "hook": one of ["3reasonswhy", "whynottobuy", "productdemonstration", "commentbubble", "talkinghead", "problem", "offer", "shocking", "taboo"]
+- "talent_gender": one of ["Male", "Female", "No Gender"]
+- "length": one of ["IMG", "03sec", "06sec", "10sec", "15sec", "30sec", "60sec", "90sec", "120sec"] (use "IMG" for images)
+- "audio": one of ["music", "voiceover", "trendingsound", "none"]
+- "talent": a short name for the talent/person shown, or "AI" if AI-generated or no person visible
+
+Return ONLY valid JSON, no markdown, no explanation.`;
+
+function parseGeminiResponse(result) {
+  let jsonStr = result.trim();
+  const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlockMatch) jsonStr = codeBlockMatch[1].trim();
+  const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (jsonMatch) jsonStr = jsonMatch[0];
+  return JSON.parse(jsonStr);
+}
+
+function applyGeminiResult(sidecar, parsed) {
+  sidecar.fields.format = parsed.format || sidecar.fields.format;
+  sidecar.fields.messaging = parsed.messaging || sidecar.fields.messaging;
+  sidecar.fields.hook = parsed.hook || sidecar.fields.hook;
+  sidecar.fields.gender = parsed.talent_gender || sidecar.fields.gender;
+  sidecar.fields.length = parsed.length || sidecar.fields.length;
+  sidecar.fields.audio = parsed.audio || sidecar.fields.audio;
+  sidecar.fields.talent = parsed.talent || sidecar.fields.talent || 'AI';
+  sidecar.analysisStatus = 'done';
+  sidecar.proposedName = buildProposedName(sidecar);
+}
+
+async function runGeminiAnalysis(filePath) {
+  await acquireGeminiSlot();
+  try {
+    return await new Promise((resolve, reject) => {
+      execFile(GEMINI_PATH, ['-p', GEMINI_PROMPT, '--file', filePath], {
+        timeout: 90000,
+        maxBuffer: 1024 * 1024
+      }, (err, stdout) => {
+        if (err) {
+          if (err.killed) reject(new Error('Analysis timed out (90s limit)'));
+          else reject(err);
+        } else resolve(stdout);
+      });
+    });
+  } finally {
+    releaseGeminiSlot();
+  }
+}
+
 // POST /upload
-app.post('/upload', upload.array('files'), (req, res) => {
+app.post('/upload', upload.array('files'), handleMulterError, (req, res) => {
   const settings = loadSettings();
-  const results = req.files.map(f => {
+  const results = [];
+  for (const f of req.files) {
     const filename = f.filename;
     const id = filename.split('||')[0];
-    // Reconstruct original name from stored filename
-    const ext = path.extname(f.originalname);
+
+    // Duplicate detection
+    const existing = findDuplicate(f.originalname, f.size);
+    if (existing) {
+      // Remove the just-uploaded duplicate file
+      const dupeFilePath = path.join(UPLOADS_DIR, filename);
+      try { fs.unlinkSync(dupeFilePath); } catch {}
+      results.push(existing);
+      continue;
+    }
+
     const sidecar = {
       id,
       originalName: f.originalname,
@@ -132,8 +286,8 @@ app.post('/upload', upload.array('files'), (req, res) => {
       }
     };
     saveSidecar(id, sidecar);
-    return sidecar;
-  });
+    results.push(sidecar);
+  }
   res.json(results);
 });
 
@@ -143,7 +297,6 @@ app.get('/files', (req, res) => {
   const result = files.map(f => {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(UPLOADS_DIR, f), 'utf-8'));
-      // Verify the actual file still exists
       if (!findFileById(data.id)) return null;
       return data;
     } catch {
@@ -151,6 +304,14 @@ app.get('/files', (req, res) => {
     }
   }).filter(Boolean);
   res.json(result);
+});
+
+// GET /files/:id — single file metadata
+app.get('/files/:id', (req, res) => {
+  const sidecar = loadSidecar(req.params.id);
+  if (!sidecar) return res.status(404).json({ error: 'File not found' });
+  if (!findFileById(sidecar.id)) return res.status(404).json({ error: 'File not found on disk' });
+  res.json(sidecar);
 });
 
 // POST /analyze/:id
@@ -165,53 +326,11 @@ app.post('/analyze/:id', async (req, res) => {
   sidecar.analysisStatus = 'analyzing';
   saveSidecar(id, sidecar);
 
-  const prompt = `Analyze this creative asset (image or video) for a UGC ad naming convention system. Return ONLY a JSON object with these exact fields:
-- "format": one of ["Advertorial", "UGCMashup", "Unboxing", "podcast", "StreetInterview", "BeforeAfter"]
-- "messaging": one of ["FOMO", "tagline", "benefit1", "founderstory", "problemsolution"]
-- "hook": one of ["3reasonswhy", "whynottobuy", "productdemonstration", "commentbubble", "talkinghead", "problem", "offer", "shocking", "taboo"]
-- "talent_gender": one of ["Male", "Female", "No Gender"]
-- "length": one of ["IMG", "03sec", "06sec", "10sec", "15sec", "30sec", "60sec", "90sec", "120sec"] (use "IMG" for images)
-- "audio": one of ["music", "voiceover", "trendingsound", "none"]
-- "talent": a short name for the talent/person shown, or "AI" if AI-generated or no person visible
-
-Return ONLY valid JSON, no markdown, no explanation.`;
-
   try {
-    const result = await new Promise((resolve, reject) => {
-      execFile(GEMINI_PATH, ['-p', prompt, '--file', filePath], {
-        timeout: 120000,
-        maxBuffer: 1024 * 1024
-      }, (err, stdout, stderr) => {
-        if (err) reject(err);
-        else resolve(stdout);
-      });
-    });
-
-    // Parse JSON from response (handle markdown code blocks)
-    let jsonStr = result.trim();
-    const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch) {
-      jsonStr = codeBlockMatch[1].trim();
-    }
-    // Also try to find raw JSON object
-    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[0];
-    }
-
-    const parsed = JSON.parse(jsonStr);
-
-    sidecar.fields.format = parsed.format || sidecar.fields.format;
-    sidecar.fields.messaging = parsed.messaging || sidecar.fields.messaging;
-    sidecar.fields.hook = parsed.hook || sidecar.fields.hook;
-    sidecar.fields.gender = parsed.talent_gender || sidecar.fields.gender;
-    sidecar.fields.length = parsed.length || sidecar.fields.length;
-    sidecar.fields.audio = parsed.audio || sidecar.fields.audio;
-    sidecar.fields.talent = parsed.talent || sidecar.fields.talent || 'AI';
-    sidecar.analysisStatus = 'done';
-    sidecar.proposedName = buildProposedName(sidecar);
+    const result = await runGeminiAnalysis(filePath);
+    const parsed = parseGeminiResponse(result);
+    applyGeminiResult(sidecar, parsed);
     saveSidecar(id, sidecar);
-
     res.json(sidecar);
   } catch (err) {
     sidecar.analysisStatus = 'error';
@@ -231,7 +350,7 @@ app.post('/analyze-all', async (req, res) => {
 
   res.json({ queued: sidecars.length, ids: sidecars.map(s => s.id) });
 
-  // Run sequentially in background
+  // Run with rate limiting in background
   for (const sidecar of sidecars) {
     const filePath = findFileById(sidecar.id);
     if (!filePath) continue;
@@ -239,44 +358,10 @@ app.post('/analyze-all', async (req, res) => {
     sidecar.analysisStatus = 'analyzing';
     saveSidecar(sidecar.id, sidecar);
 
-    const prompt = `Analyze this creative asset (image or video) for a UGC ad naming convention system. Return ONLY a JSON object with these exact fields:
-- "format": one of ["Advertorial", "UGCMashup", "Unboxing", "podcast", "StreetInterview", "BeforeAfter"]
-- "messaging": one of ["FOMO", "tagline", "benefit1", "founderstory", "problemsolution"]
-- "hook": one of ["3reasonswhy", "whynottobuy", "productdemonstration", "commentbubble", "talkinghead", "problem", "offer", "shocking", "taboo"]
-- "talent_gender": one of ["Male", "Female", "No Gender"]
-- "length": one of ["IMG", "03sec", "06sec", "10sec", "15sec", "30sec", "60sec", "90sec", "120sec"] (use "IMG" for images)
-- "audio": one of ["music", "voiceover", "trendingsound", "none"]
-- "talent": a short name for the talent/person shown, or "AI" if AI-generated or no person visible
-
-Return ONLY valid JSON, no markdown, no explanation.`;
-
     try {
-      const result = await new Promise((resolve, reject) => {
-        execFile(GEMINI_PATH, ['-p', prompt, '--file', filePath], {
-          timeout: 120000,
-          maxBuffer: 1024 * 1024
-        }, (err, stdout) => {
-          if (err) reject(err);
-          else resolve(stdout);
-        });
-      });
-
-      let jsonStr = result.trim();
-      const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (codeBlockMatch) jsonStr = codeBlockMatch[1].trim();
-      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-      if (jsonMatch) jsonStr = jsonMatch[0];
-
-      const parsed = JSON.parse(jsonStr);
-      sidecar.fields.format = parsed.format || sidecar.fields.format;
-      sidecar.fields.messaging = parsed.messaging || sidecar.fields.messaging;
-      sidecar.fields.hook = parsed.hook || sidecar.fields.hook;
-      sidecar.fields.gender = parsed.talent_gender || sidecar.fields.gender;
-      sidecar.fields.length = parsed.length || sidecar.fields.length;
-      sidecar.fields.audio = parsed.audio || sidecar.fields.audio;
-      sidecar.fields.talent = parsed.talent || sidecar.fields.talent || 'AI';
-      sidecar.analysisStatus = 'done';
-      sidecar.proposedName = buildProposedName(sidecar);
+      const result = await runGeminiAnalysis(filePath);
+      const parsed = parseGeminiResponse(result);
+      applyGeminiResult(sidecar, parsed);
     } catch (err) {
       sidecar.analysisStatus = 'error';
       sidecar.analysisError = err.message;
@@ -384,21 +469,17 @@ app.post('/update/:id', (req, res) => {
 
   const updates = req.body;
 
-  // Update fields
   if (updates.fields) {
     sidecar.fields = { ...sidecar.fields, ...updates.fields };
   }
-  // Allow direct field updates too
   for (const key of ['source', 'product', 'format', 'messaging', 'hook', 'talent', 'gender', 'length', 'offer', 'lp', 'audio']) {
     if (updates[key] !== undefined) {
       sidecar.fields[key] = updates[key];
     }
   }
-  // Allow direct proposedName override
   if (updates.proposedName !== undefined) {
     sidecar.proposedName = updates.proposedName;
   } else {
-    // Recalculate
     sidecar.proposedName = buildProposedName(sidecar);
   }
 
@@ -487,7 +568,6 @@ app.post('/settings', (req, res) => {
 
 // Serve uploaded files for preview
 app.use('/uploads', express.static(UPLOADS_DIR));
-// Fallback: serve uploaded file by stored filename
 app.get('/uploads/:filename', (req, res) => {
   const filePath = path.join(UPLOADS_DIR, req.params.filename);
   if (fs.existsSync(filePath)) return res.sendFile(filePath);
