@@ -418,6 +418,15 @@ function renderUploadQueue() {
   if (!tbody) return;
   const filtered = getFilteredUploadFiles();
 
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12">
+      <span class="material-symbols-outlined text-outline text-[48px] mb-2 block">cloud_upload</span>
+      <p class="text-on-surface-variant text-sm">No files uploaded yet</p>
+      <p class="text-on-surface-variant text-xs mt-1">Drop files above or click Browse to get started</p>
+    </td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = filtered.map((f, idx) => {
     const checked = state.selectedIds.has(f.id) ? 'checked' : '';
     return `<tr data-id="${f.id}">
@@ -679,6 +688,22 @@ document.addEventListener('change', async (e) => {
 // --- PAGE 3: FILES ---
 async function renderFiles() {
   const main = document.getElementById('main-content');
+
+  // Show skeleton while loading
+  main.innerHTML = `
+    ${renderHeader('File Manager', 'Browse, preview, and manage your assets')}
+    <div class="px-6 pb-8">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        ${[1,2,3].map(() => `<div class="bg-surface-container-lowest rounded-lg overflow-hidden ambient-shadow animate-pulse">
+          <div class="w-full aspect-video bg-surface-container-high"></div>
+          <div class="p-3">
+            <div class="h-3 bg-surface-container-high rounded w-3/4 mb-2"></div>
+            <div class="h-2 bg-surface-container-high rounded w-1/2"></div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
   try { state.files = await API.getFiles(); } catch {}
 
   main.innerHTML = `

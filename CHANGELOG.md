@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.0 — Final QA
+- Sort options in Files view (newest, oldest, name A-Z, name Z-A, status)
+- Escape key closes lightbox
+- Duplicate upload detection (same filename + size returns existing file)
+- Loading skeleton cards while Files page fetches data
+- Empty state on Upload tab when no files uploaded
+- Updated start.sh to Precision Curator branding
+
 ## v0.4.0 — Auto-Start & Docs
 - macOS launchd plist auto-start on login (`install-service.sh`)
 - `start.sh`: one-command startup + browser open

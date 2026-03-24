@@ -1,6 +1,6 @@
 {
   "name": "motion-renamer",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Motion-compatible file renamer with Gemini AI analysis",
   "main": "server.js",
   "scripts": {

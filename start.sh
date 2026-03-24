@@ -1,8 +1,8 @@
 #!/bin/bash
-PORT=3210
-pkill -f "node server.js" 2>/dev/null
-cd "$(dirname "$0")"
-node server.js &
+pkill -f 'node server.js' 2>/dev/null || true
 sleep 1
-open http://localhost:$PORT
-echo "Motion Renamer started at http://localhost:$PORT"
+cd /Users/arieltolome/.openclaw/workspace/motion-renamer
+node server.js &
+sleep 2
+open http://localhost:3210
+echo 'Precision Curator running at http://localhost:3210'
