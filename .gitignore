@@ -2,3 +2,5 @@ node_modules/
 uploads/
 renamed/
 settings.json
+*.log
+.DS_Store
