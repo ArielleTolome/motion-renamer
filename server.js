@@ -404,6 +404,60 @@ app.delete('/files/:id', (req, res) => {
   res.json({ deleted: true });
 });
 
+// GET /stats
+app.get('/stats', (req, res) => {
+  const jsonFiles = fs.readdirSync(UPLOADS_DIR).filter(f => f.endsWith('.json'));
+  let totalFiles = 0, analyzed = 0, pending = 0, totalSize = 0;
+  for (const f of jsonFiles) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(UPLOADS_DIR, f), 'utf-8'));
+      if (!findFileById(data.id)) continue;
+      totalFiles++;
+      totalSize += data.size || 0;
+      if (data.analysisStatus === 'done') analyzed++;
+      else if (data.analysisStatus === 'pending') pending++;
+    } catch {}
+  }
+  res.json({ totalFiles, analyzed, pending, totalSize });
+});
+
+// DELETE /files/bulk
+app.delete('/files/bulk', (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids)) return res.status(400).json({ error: 'ids must be an array' });
+  let deleted = 0;
+  for (const id of ids) {
+    const filePath = findFileById(id);
+    const sidecarPath = getSidecarPath(id);
+    if (filePath) { fs.unlinkSync(filePath); deleted++; }
+    if (fs.existsSync(sidecarPath)) fs.unlinkSync(sidecarPath);
+  }
+  res.json({ deleted });
+});
+
+// GET /download-selected-zip
+app.get('/download-selected-zip', (req, res) => {
+  const ids = (req.query.ids || '').split(',').filter(Boolean);
+  if (ids.length === 0) return res.status(400).json({ error: 'No ids provided' });
+
+  const sidecars = ids.map(id => loadSidecar(id)).filter(Boolean);
+  if (sidecars.length === 0) return res.status(400).json({ error: 'No valid files found' });
+
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', 'attachment; filename="motion-selected-files.zip"');
+
+  const archive = archiver('zip', { zlib: { level: 5 } });
+  archive.pipe(res);
+
+  for (const sidecar of sidecars) {
+    const filePath = findFileById(sidecar.id);
+    if (filePath) {
+      archive.file(filePath, { name: sidecar.proposedName || sidecar.originalName });
+    }
+  }
+  archive.finalize();
+});
+
 // GET /settings
 app.get('/settings', (req, res) => {
   res.json(loadSettings());

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload &amp; Renamer | Precision Curator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#191c1d",
+              "outline": "#737783",
+              "inverse-surface": "#2e3132",
+              "surface-tint": "#3c5d9c",
+              "on-secondary-fixed": "#021f29",
+              "surface": "#f8f9fa",
+              "secondary-container": "#cbe7f5",
+              "surface-variant": "#e1e3e4",
+              "on-error": "#ffffff",
+              "inverse-primary": "#aec6ff",
+              "primary-container": "#284a88",
+              "surface-container": "#edeeef",
+              "on-primary-fixed": "#001a42",
+              "on-secondary-container": "#4e6874",
+              "surface-bright": "#f8f9fa",
+              "secondary": "#48626e",
+              "on-surface-variant": "#434652",
+              "surface-container-lowest": "#ffffff",
+              "error": "#ba1a1a",
+              "surface-container-high": "#e7e8e9",
+              "primary": "#073370",
+              "on-primary-fixed-variant": "#224583",
+              "outline-variant": "#c3c6d4",
+              "secondary-fixed": "#cbe7f5",
+              "on-surface": "#191c1d",
+              "tertiary-fixed": "#ffd9de",
+              "tertiary-fixed-dim": "#ffb2bf",
+              "inverse-on-surface": "#f0f1f2",
+              "tertiary-container": "#99003f",
+              "primary-fixed": "#d8e2ff",
+              "tertiary": "#6f002c",
+              "on-tertiary-container": "#ffa2b4",
+              "error-container": "#ffdad6",
+              "background": "#f8f9fa",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-fixed-variant": "#90003b",
+              "surface-container-highest": "#e1e3e4",
+              "surface-dim": "#d9dadb",
+              "surface-container-low": "#f3f4f5",
+              "primary-fixed-dim": "#aec6ff",
+              "on-primary-container": "#9ebcff",
+              "on-tertiary-fixed": "#3f0016",
+              "on-primary": "#ffffff",
+              "secondary-fixed-dim": "#afcbd8",
+              "on-secondary": "#ffffff",
+              "on-error-container": "#93000a",
+              "on-secondary-fixed-variant": "#304a55"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-panel {
+        background: rgba(225, 227, 228, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      .primary-gradient {
+        background: linear-gradient(135deg, #073370 0%, #284a88 100%);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface overflow-x-hidden">
+<!-- SideNavBar (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low py-6 pl-4 z-40">
+<div class="mb-8 px-2">
+<h1 class="text-lg font-black tracking-tight text-primary font-headline">Precision Curator</h1>
+<p class="text-[10px] uppercase tracking-[0.05rem] text-on-surface-variant">Asset Management</p>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-medium">Assets</span>
+</a>
+<!-- Active State: Uploads -->
+<a class="flex items-center gap-3 px-4 py-3 bg-white text-primary font-bold rounded-l-lg translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="cloud_upload">cloud_upload</span>
+<span class="font-medium">Uploads</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+<span class="font-medium">Collections</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="archive">archive</span>
+<span class="font-medium">Archive</span>
+</a>
+</nav>
+<div class="mt-auto px-4 space-y-4">
+<button class="w-full primary-gradient text-on-primary py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Project
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span class="text-xs font-semibold uppercase tracking-wider font-label">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span class="text-xs font-semibold uppercase tracking-wider font-label">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar (Mobile/Main Content Header) -->
+<header class="flex justify-between items-center w-full px-6 py-3 sticky top-0 z-50 bg-slate-50 md:pl-72">
+<div class="flex items-center gap-4">
+<div class="md:hidden text-xl font-bold text-primary font-headline">Precision Curator</div>
+<div class="hidden md:flex items-center bg-surface-container rounded px-3 py-1.5 w-64">
+<span class="material-symbols-outlined text-outline mr-2 text-xl" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full font-body" placeholder="Search workspace..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-primary transition-colors active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-primary transition-colors active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User profile" data-alt="professional portrait of a creative director in a minimalist studio setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqMsn9FONTjBOvmTFMVOlbaFoIKip7DVBmdTGqHT8tlvHLfJX09sdQRamPmGdrgGt8FlFJmH-RF46OMf36HgWu_YkhifF7x7FGeW7ylfwcnJshVSmHwJ5qvk6WmnYB6v_CiJZ-JXxKAoqE1NOAfT-Ln5k4Cq1bdqdZPkrAW0efijqOvLhc8ei8JQ32VfT7qifUv2MsG0Km6bAWq0o6nyXm1K8RBYA5bk_f1RajJHVh6yuBW0eE9HMcpqDM7O1hOGd_gt4wrIz-1Hc"/>
+</div>
+</div>
+</header>
+<!-- Main Content Stage -->
+<main class="md:ml-64 p-6 lg:p-10 max-w-7xl mx-auto">
+<!-- Header Section -->
+<header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="space-y-2">
+<span class="text-[11px] uppercase tracking-wider font-semibold text-primary font-label">Workspace / Studio Assets</span>
+<h2 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight">Upload &amp; Renamer</h2>
+<p class="text-on-surface-variant max-w-xl font-body">Standardize your media library with automated naming conventions. Drop files below to begin the curation process.</p>
+</div>
+<div>
+<button class="primary-gradient text-on-primary py-3 px-8 rounded font-bold text-sm shadow-md active:scale-[0.99] transition-transform">
+                    Apply Naming Convention
+                </button>
+</div>
+</header>
+<!-- Drop Zone -->
+<section class="mb-12">
+<div class="relative group">
+<div class="absolute inset-0 bg-primary/5 rounded-xl border-2 border-dashed border-outline-variant group-hover:border-primary transition-colors pointer-events-none"></div>
+<div class="relative py-20 px-6 flex flex-col items-center justify-center text-center">
+<div class="w-16 h-16 bg-surface-container-highest rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="upload_file">upload_file</span>
+</div>
+<h3 class="text-xl font-bold font-headline mb-2">Drag and drop assets here</h3>
+<p class="text-on-surface-variant font-body mb-6">PNG, JPG, MP4 or MOV. Max file size 500MB.</p>
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-on-surface py-2 px-6 rounded font-semibold text-sm transition-colors">
+                        Browse Files
+                    </button>
+</div>
+</div>
+</section>
+<!-- Data Table Section -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h4 class="text-lg font-bold font-headline">Pending Queue <span class="text-slate-400 font-normal ml-2">(4 files)</span></h4>
+<div class="flex items-center gap-3">
+<button class="text-primary text-sm font-bold flex items-center gap-1 hover:underline underline-offset-4">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                        Sort by Date
+                    </button>
+</div>
+</div>
+<!-- Precision Curator Table Pattern -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-2">
+<thead>
+<tr class="text-on-surface-variant">
+<th class="px-6 py-2 text-[11px] uppercase tracking-wider font-semibold font-label">Original File Name</th>
+<th class="px-6 py-2 text-[11px] uppercase tracking-wider font-semibold font-label">Proposed New Name</th>
+<th class="px-6 py-2 text-[11px] uppercase tracking-wider font-semibold font-label">Status</th>
+<th class="px-6 py-2 text-[11px] uppercase tracking-wider font-semibold font-label text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<!-- Row 1 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 rounded-l">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+<img alt="Preview" data-alt="professional high-end mirrorless camera on a tripod in a dimly lit studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBthwKDNPVDmhDsaK78ITHtfvNFHKZE1CjtjstsWzfD3eBiTqKXSDcjNCYt7AkCXFrCROnBdoM5TY7FTf2Rr_9XyzQIWEZYi3Ccg5f2sAJH0Q6c9NEHiZlqufEYhU7mIOzmgMGVMxQMW3GCniuJNfFb1uIM0kpXGuwXxwKo6GZU8x9nHH8be8EnJHDsrprUbku6vQfoI-a5WeuBkCFMr8hOKjPRhZuc774mIlObY1AQN0ZNwHaFm5nhTgnl2yScExcjdjn91gr_GbA"/>
+</div>
+<span class="font-medium text-on-surface font-body truncate max-w-[200px]">IMG_9283_RAW_FINAL.jpg</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<code class="bg-primary/5 text-primary px-2 py-1 rounded font-mono text-xs font-semibold">2023_STUDIO_SESSION_CAM01_001.jpg</code>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                    Ready
+                                </span>
+</td>
+<td class="px-6 py-4 rounded-r text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="text-outline hover:text-error transition-colors ml-4">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 rounded-l">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+<img alt="Preview" data-alt="vibrant architectural photography of a modern glass building during blue hour" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmb0qsIy5yWW_GhS_IoFB7z38n99iowbc07tES-5SDI0vJ3vBMTjkfFFhDXLuEGbcPdbuUffNVsW_Vwk7LL1uv56GZtEheTspluGNDES5VbYzbXSLFAl2lcBWwCodsOUbt6Lzn7CbxdzU3hq6TjOVDlEH6HW7raZoOBHP_GIQAYEm14WiznyHFN9up9g01k9XkUS4N48-mYuMyqtimAv3E0XTokmEKydvkDgvPQZAH9yaUIyx7eeIjVor1x8-NrFxwej0FNqOhhF0"/>
+</div>
+<span class="font-medium text-on-surface font-body truncate max-w-[200px]">arch_render_v2_edit.mp4</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<code class="bg-primary/5 text-primary px-2 py-1 rounded font-mono text-xs font-semibold">PROJECT_X_ARCHITECTURE_RENDER_V02.mp4</code>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                    Ready
+                                </span>
+</td>
+<td class="px-6 py-4 rounded-r text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="text-outline hover:text-error transition-colors ml-4">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 rounded-l">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+<img alt="Preview" data-alt="close up of a professional photography lens with beautiful glass reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQr1D6n0HOa8fAN_jeghCML__xNRstM6maZ31S-NrwYy3_ob4F4U3ueKaaFEIHVVUIh4oCbLYa6bp9TgYa8zkTQrrk3f3hpzYaR69AFh5gBi0yPB39VfVoU-XQG7kx8-TFtZM1TxlJ5K0TYDeWQhtQLPVlvbv8ih59wQrbO857-M3ly4OvvrWVvcLfh8WD_6DQvvBys4OBCDK0Z36iBmqz5-Sm6r-yiuZLEDEInLjiEF3xf5mSaeQoEZb_gIUw5mm94g-hvmT1c2I"/>
+</div>
+<span class="font-medium text-on-surface font-body truncate max-w-[200px]">whatsapp_image_2023.jpeg</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<code class="bg-primary/5 text-primary px-2 py-1 rounded font-mono text-xs font-semibold">2023_SOCIAL_B_ROLL_084.jpeg</code>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-bold uppercase tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                                    Review Needed
+                                </span>
+</td>
+<td class="px-6 py-4 rounded-r text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="text-outline hover:text-error transition-colors ml-4">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 rounded-l">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+<img alt="Preview" data-alt="top view of a desk with multiple cameras, lenses and creative tools neatly organized" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBed8Vhi5SfePlq6l-aLSyMmngFrUzQkERnnYVi_RhUxmf433UxAJy4HVd_eczdv_64-h9vlljC9CVH-NhKf1LPxcUTgoYRFnhvoWHfRIvcxrztxAV9PPrw9GTBvAb-jELXD7tQwoKRq3ja4I_JDPQDXAbWy__qE8j9agMqRvkBTZKeJc8Zp9Y-ZDMq6yMEACfX-Juv2ZJkzMf-HoFaktlwERyjjj-SPjuKrdEnjThPnFFP45OOe6AishMBZUWA9xpWk4dRk1UVGvY"/>
+</div>
+<span class="font-medium text-on-surface font-body truncate max-w-[200px]">DUMMY_EXPORT_TEST.png</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<code class="bg-primary/5 text-primary px-2 py-1 rounded font-mono text-xs font-semibold">SYSTEM_CHECK_EXPORT_001.png</code>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-tight">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                    Ready
+                                </span>
+</td>
+<td class="px-6 py-4 rounded-r text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+</button>
+<button class="text-outline hover:text-error transition-colors ml-4">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Configuration Sidebar (Asymmetric layout) -->
+<section class="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-10">
+<div class="lg:col-span-2 bg-surface-container-low rounded-xl p-8 space-y-6">
+<h4 class="text-xl font-extrabold font-headline">Naming Convention Rules</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant">Prefix Pattern</label>
+<select class="w-full bg-white border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm font-body py-2">
+<option>Year [YYYY]</option>
+<option>Project Name</option>
+<option>Custom Text</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant">Separator</label>
+<select class="w-full bg-white border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm font-body py-2">
+<option>Underscore (_)</option>
+<option>Hyphen (-)</option>
+<option>CamelCase</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant">Suffix Sequence</label>
+<input class="w-full bg-white border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm font-body py-2" placeholder="001, 002..." type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant">Metadata Tag</label>
+<select class="w-full bg-white border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm font-body py-2">
+<option>Resolution</option>
+<option>Codec</option>
+<option>None</option>
+</select>
+</div>
+</div>
+</div>
+<div class="bg-primary p-8 rounded-xl text-on-primary flex flex-col justify-between">
+<div class="space-y-4">
+<span class="material-symbols-outlined text-4xl" data-icon="auto_awesome">auto_awesome</span>
+<h5 class="text-2xl font-bold font-headline leading-tight">Smart Preview</h5>
+<p class="text-on-primary-container text-sm leading-relaxed opacity-90">Precision Curator uses AI to analyze file contents and suggest relevant tags based on your previous organization patterns.</p>
+</div>
+<div class="mt-8">
+<div class="bg-white/10 p-4 rounded border border-white/20">
+<p class="text-[10px] uppercase tracking-widest font-bold mb-1 opacity-70">Example Output</p>
+<p class="font-mono text-sm">2024_NY_EVENT_001.png</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-4px_12px_rgba(7,51,112,0.05)] z-50 flex justify-around items-center px-4 py-3">
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-bold uppercase font-label">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-[10px] font-bold uppercase font-label">Assets</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="cloud_upload" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+<span class="text-[10px] font-bold uppercase font-label">Upload</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+<span class="text-[10px] font-bold uppercase font-label">Saved</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-[10px] font-bold uppercase font-label">More</span>
+</a>
+</nav>
+</body></html>

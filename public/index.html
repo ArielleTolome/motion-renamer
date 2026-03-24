@@ -10,12 +10,18 @@
   <nav class="topnav">
     <div class="nav-brand">Motion Renamer</div>
     <div class="nav-tabs">
-      <button class="nav-tab active" data-tab="upload">📤 Upload</button>
-      <button class="nav-tab" data-tab="table">📊 Table</button>
-      <button class="nav-tab" data-tab="files">📁 Files</button>
+      <button class="nav-tab active" data-tab="upload">Upload</button>
+      <button class="nav-tab" data-tab="table">Table</button>
+      <button class="nav-tab" data-tab="files">Files</button>
     </div>
     <button class="nav-settings" id="settingsBtn" title="Settings">⚙️</button>
   </nav>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar" id="statsBar">
+    <span id="statsText">0 files</span>
+    <button class="btn btn-sm btn-ghost" id="refreshStatsBtn" title="Refresh">↻</button>
+  </div>
 
   <main>
     <!-- Upload Tab -->
@@ -41,11 +47,14 @@
       <div class="table-toolbar">
         <input type="text" class="search-input" id="tableSearch" placeholder="Search files...">
         <button class="btn btn-accent" id="downloadAllBtn">📦 Download All (ZIP)</button>
+        <button class="btn btn-primary" id="downloadSelectedBtn" disabled>⬇ Download Selected</button>
+        <button class="btn btn-danger" id="bulkDeleteBtn" disabled>🗑 Delete Selected</button>
       </div>
       <div class="table-wrapper">
         <table class="data-table" id="dataTable">
           <thead>
             <tr>
+              <th><input type="checkbox" id="selectAllCheckbox"></th>
               <th>#</th>
               <th>Preview</th>
               <th>Original Name</th>
@@ -79,6 +88,12 @@
         </div>
       </div>
       <div class="files-grid" id="filesGrid"></div>
+      <!-- Selection toolbar for Files grid -->
+      <div class="selection-toolbar" id="selectionToolbar" style="display:none;">
+        <span id="selectionCount">0 selected</span>
+        <button class="btn btn-sm btn-primary" id="selToolbarDownload">⬇ Download ZIP</button>
+        <button class="btn btn-sm btn-danger" id="selToolbarDelete">🗑 Delete</button>
+      </div>
     </section>
   </main>
 
@@ -107,6 +122,14 @@
           </div>
         </div>
         <div class="setting-group">
+          <label>Talent</label>
+          <div class="chips" id="talentChips"></div>
+          <div class="chip-add">
+            <input type="text" id="newTalent" placeholder="Add talent name (e.g. AI)">
+            <button class="btn btn-sm" id="addTalentBtn">Add</button>
+          </div>
+        </div>
+        <div class="setting-group">
           <label>Default Source</label>
           <select id="defaultSource" class="field-select"></select>
         </div>
@@ -114,9 +137,13 @@
           <label>Default Product</label>
           <select id="defaultProduct" class="field-select"></select>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="saveSettingsBtn">Save</button>
+        <div class="setting-group">
+          <label>Default Talent</label>
+          <select id="defaultTalent" class="field-select"></select>
+        </div>
+        <div class="setting-group">
+          <button class="btn btn-ghost" id="resetSettingsBtn">Reset to Defaults</button>
+        </div>
       </div>
     </div>
   </div>

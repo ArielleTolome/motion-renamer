@@ -4,6 +4,8 @@ const API = '';
 let files = [];
 let settings = {};
 let analysisPollInterval = null;
+let selectedIds = new Set();
+let lastClickedCardIndex = -1;
 
 // Glossary options
 const GLOSSARY = {
@@ -17,6 +19,15 @@ const GLOSSARY = {
   audio: ['music', 'voiceover', 'trendingsound', 'none']
 };
 
+const DEFAULT_SETTINGS = {
+  sources: ['s-ariel', 's-a-teamwork', 's-data-grande'],
+  products: ['p-medicare-english', 'p-medicare-spanish', 'p-aca-english', 'p-aca-spanish'],
+  talents: ['AI', 'Ariel'],
+  defaultSource: 's-ariel',
+  defaultProduct: 'p-medicare-english',
+  defaultTalent: 'AI'
+};
+
 // DOM refs
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
@@ -27,8 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDropZone();
   setupSettings();
   setupViewToggle();
+  setupBulkActions();
+  setupSelectionToolbar();
   loadFiles();
   loadSettings();
+  loadStats();
 });
 
 // Tabs
@@ -59,6 +73,16 @@ function updateTabBadges() {
   });
 }
 
+// Stats bar
+async function loadStats() {
+  try {
+    const res = await fetch(`${API}/stats`);
+    const stats = await res.json();
+    const sizeStr = formatSize(stats.totalSize);
+    $('#statsText').textContent = `${stats.totalFiles} files · ${stats.analyzed} analyzed · ${sizeStr}`;
+  } catch {}
+}
+
 // Drop Zone
 function setupDropZone() {
   const zone = $('#dropZone');
@@ -80,6 +104,7 @@ function setupDropZone() {
 
   $('#analyzeAllBtn').addEventListener('click', analyzeAll);
   $('#clearAllBtn').addEventListener('click', clearAll);
+  $('#refreshStatsBtn').addEventListener('click', loadStats);
 }
 
 async function handleFiles(fileList) {
@@ -93,6 +118,7 @@ async function handleFiles(fileList) {
     files = [...files, ...uploaded];
     renderUploadList();
     updateTabBadges();
+    loadStats();
     $('#uploadActions').style.display = 'flex';
   } catch (err) {
     console.error('Upload failed:', err);
@@ -137,6 +163,7 @@ async function analyzeSingle(id) {
   }
   renderUploadList();
   updateTabBadges();
+  loadStats();
 }
 
 async function analyzeAll() {
@@ -162,12 +189,12 @@ function startAnalysisPoll() {
       const statusRes = await fetch(`${API}/analyze-status`);
       const status = await statusRes.json();
       updateProgressBar(status);
-      // Also refresh file list to update chips
       await loadFiles();
       if (status.analyzing === 0 && status.pending === 0) {
         clearInterval(analysisPollInterval);
         analysisPollInterval = null;
         hideProgressBar();
+        loadStats();
       }
     } catch (err) {
       console.error('Poll failed:', err);
@@ -202,17 +229,97 @@ function hideProgressBar() {
 
 async function clearAll() {
   if (!confirm('Delete ALL files? This cannot be undone.')) return;
-  for (const f of [...files]) {
-    try {
-      await fetch(`${API}/files/${f.id}`, { method: 'DELETE' });
-    } catch {}
-  }
+  const ids = files.map(f => f.id);
+  try {
+    await fetch(`${API}/files/bulk`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+  } catch {}
   files = [];
+  selectedIds.clear();
   renderUploadList();
   renderTable();
   renderFilesGrid();
   updateTabBadges();
+  loadStats();
   $('#uploadActions').style.display = 'none';
+}
+
+// Bulk actions (Table tab)
+function setupBulkActions() {
+  $('#selectAllCheckbox').addEventListener('change', (e) => {
+    if (e.target.checked) {
+      files.forEach(f => selectedIds.add(f.id));
+    } else {
+      selectedIds.clear();
+    }
+    renderTable();
+    updateBulkButtons();
+  });
+
+  $('#downloadSelectedBtn').addEventListener('click', () => {
+    if (selectedIds.size === 0) return;
+    window.open(`${API}/download-selected-zip?ids=${[...selectedIds].join(',')}`, '_blank');
+  });
+
+  $('#bulkDeleteBtn').addEventListener('click', async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected files?`)) return;
+    try {
+      await fetch(`${API}/files/bulk`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [...selectedIds] })
+      });
+      selectedIds.clear();
+      await loadFiles();
+      loadStats();
+    } catch (err) {
+      console.error('Bulk delete failed:', err);
+    }
+  });
+}
+
+function updateBulkButtons() {
+  const n = selectedIds.size;
+  $('#downloadSelectedBtn').disabled = n === 0;
+  $('#bulkDeleteBtn').disabled = n === 0;
+  $('#downloadSelectedBtn').textContent = n > 0 ? `⬇ Download Selected (${n})` : '⬇ Download Selected';
+  $('#bulkDeleteBtn').textContent = n > 0 ? `🗑 Delete Selected (${n})` : '🗑 Delete Selected';
+}
+
+// Selection toolbar (Files grid)
+function setupSelectionToolbar() {
+  $('#selToolbarDownload').addEventListener('click', () => {
+    if (selectedIds.size === 0) return;
+    window.open(`${API}/download-selected-zip?ids=${[...selectedIds].join(',')}`, '_blank');
+  });
+  $('#selToolbarDelete').addEventListener('click', async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} selected files?`)) return;
+    try {
+      await fetch(`${API}/files/bulk`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [...selectedIds] })
+      });
+      selectedIds.clear();
+      await loadFiles();
+      loadStats();
+    } catch {}
+  });
+}
+
+function updateSelectionToolbar() {
+  const toolbar = $('#selectionToolbar');
+  if (selectedIds.size > 0) {
+    toolbar.style.display = 'flex';
+    $('#selectionCount').textContent = `${selectedIds.size} selected`;
+  } else {
+    toolbar.style.display = 'none';
+  }
 }
 
 // Load files from server
@@ -240,7 +347,9 @@ function renderTable() {
 
   tbody.innerHTML = filtered.map((f, i) => {
     const fld = f.fields || {};
+    const checked = selectedIds.has(f.id) ? 'checked' : '';
     return `<tr data-id="${f.id}">
+      <td><input type="checkbox" class="row-checkbox" data-id="${f.id}" ${checked} onchange="toggleRowSelect('${f.id}', this.checked)"></td>
       <td>${i + 1}</td>
       <td>${previewThumb(f)}</td>
       <td title="${f.originalName}" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.originalName}</td>
@@ -266,10 +375,23 @@ function renderTable() {
     </tr>`;
   }).join('');
 
+  // Update select all checkbox
+  const allChecked = filtered.length > 0 && filtered.every(f => selectedIds.has(f.id));
+  $('#selectAllCheckbox').checked = allChecked;
+  updateBulkButtons();
+
   $('#tableSearch')?.removeEventListener('input', renderTable);
   $('#tableSearch')?.addEventListener('input', renderTable);
   $('#downloadAllBtn')?.removeEventListener('click', downloadAllZip);
   $('#downloadAllBtn')?.addEventListener('click', downloadAllZip);
+}
+
+function toggleRowSelect(id, checked) {
+  if (checked) selectedIds.add(id); else selectedIds.delete(id);
+  updateBulkButtons();
+  updateSelectionToolbar();
+  const allChecked = files.length > 0 && files.every(f => selectedIds.has(f.id));
+  $('#selectAllCheckbox').checked = allChecked;
 }
 
 function previewThumb(f) {
@@ -305,39 +427,11 @@ async function updateField(id, field, value) {
   }
 }
 
-function editProposedName(el, id) {
-  const file = files.find(f => f.id === id);
-  if (!file) return;
-  const input = document.createElement('input');
-  input.className = 'proposed-name-input';
-  input.value = file.proposedName || '';
-  input.style.width = '200px';
-  el.replaceWith(input);
-  input.focus();
-  input.addEventListener('blur', async () => {
-    await fetch(`${API}/update/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proposedName: input.value })
-    });
-    await loadFiles();
-  });
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
-}
-
 function copyProposedName(el, id) {
   const file = files.find(f => f.id === id);
   if (!file?.proposedName) return;
   navigator.clipboard.writeText(file.proposedName);
   showToast('Copied!');
-}
-
-function copyName(id) {
-  const file = files.find(f => f.id === id);
-  if (file?.proposedName) {
-    navigator.clipboard.writeText(file.proposedName);
-    showToast('Copied!');
-  }
 }
 
 function showToast(message) {
@@ -365,10 +459,12 @@ async function deleteFile(id) {
   if (!confirm('Delete this file?')) return;
   await fetch(`${API}/files/${id}`, { method: 'DELETE' });
   files = files.filter(f => f.id !== id);
+  selectedIds.delete(id);
   renderUploadList();
   renderTable();
   renderFilesGrid();
   updateTabBadges();
+  loadStats();
 }
 
 // Files Grid
@@ -380,8 +476,9 @@ function renderFilesGrid() {
     (f.proposedName || '').toLowerCase().includes(search)
   );
 
-  grid.innerHTML = filtered.map(f => {
+  grid.innerHTML = filtered.map((f, idx) => {
     const src = `${API}/uploads/${encodeURIComponent(f.storedFilename)}`;
+    const isSelected = selectedIds.has(f.id);
     let thumb;
     if (f.mimeType.startsWith('image/')) {
       thumb = `<img class="file-card-thumb" src="${src}" alt="">`;
@@ -390,7 +487,8 @@ function renderFilesGrid() {
     } else {
       thumb = `<div class="file-card-thumb file-card-thumb-placeholder">📄</div>`;
     }
-    return `<div class="file-card" onclick="openLightbox('${f.id}')">
+    return `<div class="file-card ${isSelected ? 'selected' : ''}" data-id="${f.id}" data-index="${idx}" onclick="handleCardClick(event, '${f.id}', ${idx})">
+      ${isSelected ? '<div class="card-check">✓</div>' : ''}
       ${thumb}
       <div class="file-card-info">
         <div class="file-card-name">${f.proposedName || f.originalName}</div>
@@ -403,20 +501,47 @@ function renderFilesGrid() {
     </div>`;
   }).join('');
 
-  // Generate video thumbnails
   requestAnimationFrame(() => generateVideoThumbnails());
+  updateSelectionToolbar();
 
   $('#filesSearch')?.removeEventListener('input', renderFilesGrid);
   $('#filesSearch')?.addEventListener('input', renderFilesGrid);
+}
+
+function handleCardClick(event, id, index) {
+  // If overlay button was clicked, don't select
+  if (event.target.closest('.file-card-overlay')) return;
+
+  if (event.shiftKey && lastClickedCardIndex >= 0) {
+    // Range select
+    const start = Math.min(lastClickedCardIndex, index);
+    const end = Math.max(lastClickedCardIndex, index);
+    const search = ($('#filesSearch')?.value || '').toLowerCase();
+    const filtered = files.filter(f =>
+      f.originalName.toLowerCase().includes(search) ||
+      (f.proposedName || '').toLowerCase().includes(search)
+    );
+    for (let i = start; i <= end; i++) {
+      if (filtered[i]) selectedIds.add(filtered[i].id);
+    }
+  } else {
+    // Toggle single
+    if (selectedIds.has(id)) {
+      selectedIds.delete(id);
+    } else {
+      selectedIds.add(id);
+    }
+  }
+  lastClickedCardIndex = index;
+  renderFilesGrid();
+  updateBulkButtons();
 }
 
 function generateVideoThumbnails() {
   document.querySelectorAll('video[data-thumb="true"]').forEach(video => {
     video.removeAttribute('data-thumb');
     video.addEventListener('loadeddata', function() {
-      try {
-        this.currentTime = 1;
-      } catch {}
+      try { this.currentTime = 1; } catch {}
     });
     video.addEventListener('seeked', function() {
       try {
@@ -430,12 +555,8 @@ function generateVideoThumbnails() {
         img.src = dataUrl;
         img.className = this.className;
         img.alt = 'Video thumbnail';
-        if (this.parentNode) {
-          this.parentNode.replaceChild(img, this);
-        }
-      } catch {
-        // Fallback: keep video element as-is
-      }
+        if (this.parentNode) this.parentNode.replaceChild(img, this);
+      } catch {}
     });
   });
 }
@@ -510,6 +631,7 @@ function setupSettings() {
     if (val && !settings.sources.includes(val)) {
       settings.sources.push(val);
       renderSettingsChips();
+      autoSaveSettings();
       $('#newSource').value = '';
     }
   });
@@ -519,20 +641,64 @@ function setupSettings() {
     if (val && !settings.products.includes(val)) {
       settings.products.push(val);
       renderSettingsChips();
+      autoSaveSettings();
       $('#newProduct').value = '';
     }
   });
 
-  $('#saveSettingsBtn').addEventListener('click', saveSettingsToServer);
+  $('#addTalentBtn').addEventListener('click', () => {
+    const val = $('#newTalent').value.trim();
+    if (!settings.talents) settings.talents = [];
+    if (val && !settings.talents.includes(val)) {
+      settings.talents.push(val);
+      renderSettingsChips();
+      autoSaveSettings();
+      $('#newTalent').value = '';
+    }
+  });
+
+  $('#defaultSource').addEventListener('change', () => {
+    settings.defaultSource = $('#defaultSource').value;
+    autoSaveSettings();
+  });
+  $('#defaultProduct').addEventListener('change', () => {
+    settings.defaultProduct = $('#defaultProduct').value;
+    autoSaveSettings();
+  });
+  $('#defaultTalent').addEventListener('change', () => {
+    settings.defaultTalent = $('#defaultTalent').value;
+    autoSaveSettings();
+  });
+
+  $('#resetSettingsBtn').addEventListener('click', async () => {
+    if (!confirm('Reset all settings to defaults?')) return;
+    settings = { ...DEFAULT_SETTINGS };
+    renderSettingsChips();
+    await autoSaveSettings();
+  });
 }
 
 async function loadSettings() {
   try {
     const res = await fetch(`${API}/settings`);
     settings = await res.json();
+    if (!settings.talents) settings.talents = ['AI', 'Ariel'];
+    if (!settings.defaultTalent) settings.defaultTalent = 'AI';
     renderSettingsChips();
   } catch (err) {
     console.error('Failed to load settings:', err);
+  }
+}
+
+async function autoSaveSettings() {
+  try {
+    await fetch(`${API}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    });
+  } catch (err) {
+    console.error('Failed to save settings:', err);
   }
 }
 
@@ -547,6 +713,11 @@ function renderSettingsChips() {
     `<span class="chip">${p}<button class="chip-x" onclick="removeProduct('${p}')">&times;</button></span>`
   ).join('');
 
+  const tc = $('#talentChips');
+  tc.innerHTML = (settings.talents || []).map(t =>
+    `<span class="chip">${t}<button class="chip-x" onclick="removeTalent('${t}')">&times;</button></span>`
+  ).join('');
+
   const ds = $('#defaultSource');
   ds.innerHTML = (settings.sources || []).map(s =>
     `<option value="${s}" ${s === settings.defaultSource ? 'selected' : ''}>${s}</option>`
@@ -556,31 +727,29 @@ function renderSettingsChips() {
   dp.innerHTML = (settings.products || []).map(p =>
     `<option value="${p}" ${p === settings.defaultProduct ? 'selected' : ''}>${p}</option>`
   ).join('');
+
+  const dt = $('#defaultTalent');
+  dt.innerHTML = (settings.talents || []).map(t =>
+    `<option value="${t}" ${t === settings.defaultTalent ? 'selected' : ''}>${t}</option>`
+  ).join('');
 }
 
 function removeSource(s) {
   settings.sources = settings.sources.filter(x => x !== s);
   renderSettingsChips();
+  autoSaveSettings();
 }
 
 function removeProduct(p) {
   settings.products = settings.products.filter(x => x !== p);
   renderSettingsChips();
+  autoSaveSettings();
 }
 
-async function saveSettingsToServer() {
-  settings.defaultSource = $('#defaultSource').value;
-  settings.defaultProduct = $('#defaultProduct').value;
-  try {
-    await fetch(`${API}/settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
-    });
-    $('#settingsModal').classList.remove('open');
-  } catch (err) {
-    console.error('Failed to save settings:', err);
-  }
+function removeTalent(t) {
+  settings.talents = settings.talents.filter(x => x !== t);
+  renderSettingsChips();
+  autoSaveSettings();
 }
 
 // Helpers

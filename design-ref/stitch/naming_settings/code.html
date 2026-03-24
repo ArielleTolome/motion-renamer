@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Naming Settings | Precision Curator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#191c1d",
+                        "outline": "#737783",
+                        "inverse-surface": "#2e3132",
+                        "surface-tint": "#3c5d9c",
+                        "on-secondary-fixed": "#021f29",
+                        "surface": "#f8f9fa",
+                        "secondary-container": "#cbe7f5",
+                        "surface-variant": "#e1e3e4",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#aec6ff",
+                        "primary-container": "#284a88",
+                        "surface-container": "#edeeef",
+                        "on-primary-fixed": "#001a42",
+                        "on-secondary-container": "#4e6874",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#48626e",
+                        "on-surface-variant": "#434652",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e7e8e9",
+                        "primary": "#073370",
+                        "on-primary-fixed-variant": "#224583",
+                        "outline-variant": "#c3c6d4",
+                        "secondary-fixed": "#cbe7f5",
+                        "on-surface": "#191c1d",
+                        "tertiary-fixed": "#ffd9de",
+                        "tertiary-fixed-dim": "#ffb2bf",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary-container": "#99003f",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary": "#6f002c",
+                        "on-tertiary-container": "#ffa2b4",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9fa",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#90003b",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-low": "#f3f4f5",
+                        "primary-fixed-dim": "#aec6ff",
+                        "on-primary-container": "#9ebcff",
+                        "on-tertiary-fixed": "#3f0016",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#afcbd8",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#304a55"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #191c1d;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #073370 0%, #284a88 100%);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar (The Anchor) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col py-6 pl-4 z-40">
+<div class="mb-10 px-4">
+<h1 class="text-lg font-black tracking-tight text-[#073370] dark:text-blue-500">Precision Curator</h1>
+<p class="text-[10px] uppercase tracking-[0.05rem] text-slate-500 font-bold mt-1">Asset Management</p>
+</div>
+<nav class="flex-1 space-y-1 overflow-y-auto no-scrollbar">
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-medium">Assets</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="cloud_upload">cloud_upload</span>
+<span class="font-medium">Uploads</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/50 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+<span class="font-medium">Collections</span>
+</a>
+<div class="pt-4 pb-2 px-4">
+<span class="text-[10px] uppercase tracking-[0.05rem] font-bold text-slate-400">System</span>
+</div>
+<!-- Active State: Settings -->
+<a class="flex items-center space-x-3 px-4 py-3 bg-white dark:bg-slate-800 text-[#073370] dark:text-blue-400 font-bold rounded-l-lg translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 space-y-4">
+<button class="w-full primary-gradient text-on-primary py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 text-sm shadow-lg">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                New Project
+            </button>
+<div class="pt-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-xs">PC</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-on-surface">Curator Workspace</span>
+<span class="text-[10px] text-outline">v2.4.0-Enterprise</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Stage -->
+<main class="ml-64 flex-1 min-h-screen bg-surface flex flex-col">
+<!-- TopAppBar (The Filter) -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-30 bg-slate-50 dark:bg-slate-950">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-extrabold text-[#073370] tracking-tight">Naming Settings</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg" data-icon="search">search</span>
+<input class="bg-surface-container-low border-none border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm py-2 pl-10 pr-4 w-64 transition-all" placeholder="Search parameters..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-slate-500">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="help">help</span>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 max-w-6xl w-full mx-auto space-y-8">
+<!-- Section: Naming Convention Architecture -->
+<section class="space-y-6">
+<div class="flex justify-between items-end">
+<div>
+<span class="text-[11px] uppercase tracking-wider font-semibold text-primary">Core Configuration</span>
+<h3 class="text-2xl font-bold mt-1">Naming Convention Structure</h3>
+<p class="text-sm text-on-surface-variant mt-2">Define the global taxonomy logic for asset identification.</p>
+</div>
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:underline decoration-2 underline-offset-4">
+<span class="material-symbols-outlined text-lg" data-icon="restore">restore</span>
+                        Reset to Default
+                    </button>
+</div>
+<!-- Bento Grid Layout for Construction -->
+<div class="grid grid-cols-12 gap-6">
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest p-6 rounded shadow-sm border-b-2 border-outline-variant/10">
+<label class="text-[11px] uppercase tracking-wider font-bold text-outline block mb-4">Builder Interface</label>
+<div class="flex flex-wrap gap-2 p-4 bg-surface-container rounded-lg items-center border-dashed border-2 border-outline-variant/30">
+<!-- Draggable Components -->
+<div class="flex items-center gap-2 bg-primary text-on-primary px-3 py-1.5 rounded text-sm font-bold shadow-sm">
+<span>Campaign</span>
+<span class="material-symbols-outlined text-xs cursor-pointer" data-icon="close">close</span>
+</div>
+<span class="text-primary font-black">_</span>
+<div class="flex items-center gap-2 bg-primary text-on-primary px-3 py-1.5 rounded text-sm font-bold shadow-sm">
+<span>AdGroup</span>
+<span class="material-symbols-outlined text-xs cursor-pointer" data-icon="close">close</span>
+</div>
+<span class="text-primary font-black">_</span>
+<div class="flex items-center gap-2 bg-primary text-on-primary px-3 py-1.5 rounded text-sm font-bold shadow-sm">
+<span>CreativeType</span>
+<span class="material-symbols-outlined text-xs cursor-pointer" data-icon="close">close</span>
+</div>
+<span class="text-primary font-black">_</span>
+<div class="flex items-center gap-2 bg-primary text-on-primary px-3 py-1.5 rounded text-sm font-bold shadow-sm">
+<span>Date</span>
+<span class="material-symbols-outlined text-xs cursor-pointer" data-icon="close">close</span>
+</div>
+<button class="ml-4 flex items-center gap-1 text-primary-container font-bold text-xs hover:text-primary">
+<span class="material-symbols-outlined text-base" data-icon="add_circle">add_circle</span>
+                                Add Variable
+                            </button>
+</div>
+<div class="mt-6 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="text-xs font-bold text-on-surface-variant">Separator:</span>
+<select class="bg-surface-container-low border-none border-b-2 border-outline-variant text-sm font-bold focus:border-primary focus:ring-0 rounded">
+<option>Underscore (_)</option>
+<option>Dash (-)</option>
+<option>Dot (.)</option>
+</select>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Syntax Valid
+                            </div>
+</div>
+</div>
+<!-- Side Info Panel -->
+<div class="col-span-12 lg:col-span-4 bg-primary-container text-on-primary-container p-6 rounded flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined mb-4 opacity-70" data-icon="info">info</span>
+<h4 class="font-bold text-lg leading-tight mb-2">Live Preview</h4>
+<p class="text-sm opacity-80 leading-relaxed">Generated assets will follow this strict format for all automated exports and API syncs.</p>
+</div>
+<div class="bg-white/10 p-4 rounded mt-4 font-mono text-xs break-all">
+                            SUM24_PROMO_VID_2023-11-24
+                        </div>
+</div>
+</div>
+</section>
+<!-- Section: Ad Name Generator Logic -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Ad Name Generator Settings -->
+<div class="bg-surface-container-low p-8 rounded-xl border-l-4 border-primary">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+</div>
+<h3 class="text-xl font-bold">Ad Name Generator</h3>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-wider font-bold text-outline">Character Limit Policy</label>
+<input class="w-full bg-surface-container border-none border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm py-3 px-4 transition-all" placeholder="Enter max characters" type="number" value="128"/>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-wider font-bold text-outline">Auto-Trimming Method</label>
+<div class="grid grid-cols-2 gap-2">
+<button class="py-2 px-3 bg-white text-primary border-2 border-primary text-xs font-bold rounded">Right-Side Cut</button>
+<button class="py-2 px-3 bg-surface-container text-on-surface-variant text-xs font-bold rounded">Variable Compression</button>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded mt-4">
+<div class="flex flex-col">
+<span class="text-sm font-bold">Enforce Unique IDs</span>
+<span class="text-[10px] text-on-surface-variant">Append a 4-digit hash to prevent duplicates</span>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-outline-variant checked:border-primary checked:right-0 right-4 transition-all" id="toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer" for="toggle"></label>
+</div>
+</div>
+</div>
+</div>
+<!-- Creative Strategy Analyzer Prompts -->
+<div class="bg-surface-container-low p-8 rounded-xl border-l-4 border-tertiary-container">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded bg-tertiary-container flex items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</div>
+<h3 class="text-xl font-bold">Strategy Analyzer</h3>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-wider font-bold text-outline">System Analysis Prompt</label>
+<textarea class="w-full bg-surface-container border-none border-b-2 border-outline-variant focus:border-primary focus:ring-0 text-sm py-3 px-4 resize-none transition-all" placeholder="Define how the AI should interpret your creative intent..." rows="4">Act as a Creative Strategist. Analyze the uploaded asset for color psychology, emotional resonance, and product placement effectiveness. Compare against the provided Campaign Brief to score alignment.</textarea>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] uppercase tracking-wider font-bold text-outline">Data Enrichment</label>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded cursor-pointer group">
+<input checked="" class="rounded text-primary focus:ring-primary border-outline-variant" type="checkbox"/>
+<span class="text-xs font-medium text-on-surface group-hover:text-primary transition-colors">Include Competitor Benchmarking</span>
+</label>
+<label class="flex items-center gap-3 p-3 bg-surface-container-lowest rounded cursor-pointer group">
+<input class="rounded text-primary focus:ring-primary border-outline-variant" type="checkbox"/>
+<span class="text-xs font-medium text-on-surface group-hover:text-primary transition-colors">Extract OCR Text for Ad Copy Analysis</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Actions -->
+<footer class="flex items-center justify-between pt-12 pb-24 border-t-2 border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="portrait of a professional creative director in a minimalist studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-tQ9d8jU52LsoQpji7XAeRoNwWnfIyHaISuX1wYifKEG_CTQtaISY1HDEgHRtBnkF4olexluIYxkEUbqiKqF9NlvtWenp7Dgcxl2Q1aql9ZnlZIFRzzvnBrc9f7hua6Ux8McEpUYCEQCpFMrNrUyTCqgNkn-gCZYT_lqHuJiLvCK3OjCJpvq_o2eBVK8jg9lP5sDGXiPs7S2c-XdpUv-9rfKxy36ONhSGZlx3vu-IcM5C-IPrERtxj6dNVTIGwCuufaAaDBVMlAM"/>
+<img class="w-8 h-8 rounded-full border-2 border-white object-cover" data-alt="professional man in tech casual attire smiling in a clean office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_-1ow0ZVUGaq4dARZQrzoPNdyKnNTRzB9azdCAvV-wDVTM5nPfwBKatmUOXT0UgtCpyiFv7sOu2TNTFTUYklwFOhkWFCaxZLTlwq2Xegx4GYahMmGJzpkwL4iyC0MMODVCzVQpY8Pa8TfW0RLR0QqxmSkI9_R6o2b6lrgiBc3n3KpSiNCD7dS4yd1zgW1As_5JslMCVZfZ0q5dYxtyKqE_mu-jxKpRj9a7FXag5JVDFUkH3og9Bm-sMm3VO4K0dBaV80r3xSMFqk"/>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-high flex items-center justify-center text-[10px] font-bold">+4</div>
+</div>
+<span class="text-xs text-outline font-medium">Last modified by Sarah K. 12 minutes ago</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 bg-surface-container-high text-on-surface font-bold rounded-lg text-sm hover:bg-surface-variant transition-colors">Discard Changes</button>
+<button class="px-8 py-2.5 primary-gradient text-on-primary font-bold rounded-lg text-sm shadow-xl shadow-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="save">save</span>
+                        Deploy Configuration
+                    </button>
+</div>
+</footer>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only Fallback) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-50 flex justify-around items-center py-3 z-50 border-t border-outline-variant/20">
+<div class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-[10px] font-bold mt-1">Settings</span>
+</div>
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-medium mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-[10px] font-medium mt-1">Assets</span>
+</div>
+</nav>
+<style>
+        /* Custom UI Enhancements */
+        .toggle-checkbox:checked {
+            right: 0;
+            background-color: #073370;
+            border-color: #073370;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #aec6ff;
+        }
+    </style>
+</body></html>

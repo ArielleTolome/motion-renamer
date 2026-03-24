@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Precision Curator | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#191c1d",
+              "outline": "#737783",
+              "inverse-surface": "#2e3132",
+              "surface-tint": "#3c5d9c",
+              "on-secondary-fixed": "#021f29",
+              "surface": "#f8f9fa",
+              "secondary-container": "#cbe7f5",
+              "surface-variant": "#e1e3e4",
+              "on-error": "#ffffff",
+              "inverse-primary": "#aec6ff",
+              "primary-container": "#284a88",
+              "surface-container": "#edeeef",
+              "on-primary-fixed": "#001a42",
+              "on-secondary-container": "#4e6874",
+              "surface-bright": "#f8f9fa",
+              "secondary": "#48626e",
+              "on-surface-variant": "#434652",
+              "surface-container-lowest": "#ffffff",
+              "error": "#ba1a1a",
+              "surface-container-high": "#e7e8e9",
+              "primary": "#073370",
+              "on-primary-fixed-variant": "#224583",
+              "outline-variant": "#c3c6d4",
+              "secondary-fixed": "#cbe7f5",
+              "on-surface": "#191c1d",
+              "tertiary-fixed": "#ffd9de",
+              "tertiary-fixed-dim": "#ffb2bf",
+              "inverse-on-surface": "#f0f1f2",
+              "tertiary-container": "#99003f",
+              "primary-fixed": "#d8e2ff",
+              "tertiary": "#6f002c",
+              "on-tertiary-container": "#ffa2b4",
+              "error-container": "#ffdad6",
+              "background": "#f8f9fa",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-fixed-variant": "#90003b",
+              "surface-container-highest": "#e1e3e4",
+              "surface-dim": "#d9dadb",
+              "surface-container-low": "#f3f4f5",
+              "primary-fixed-dim": "#aec6ff",
+              "on-primary-container": "#9ebcff",
+              "on-tertiary-fixed": "#3f0016",
+              "on-primary": "#ffffff",
+              "secondary-fixed-dim": "#afcbd8",
+              "on-secondary": "#ffffff",
+              "on-error-container": "#93000a",
+              "on-secondary-fixed-variant": "#304a55"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      .signature-gradient {
+        background: linear-gradient(135deg, #073370 0%, #284a88 100%);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low py-6 pl-4 z-40">
+<div class="mb-10 px-4">
+<h1 class="text-lg font-black tracking-tight text-primary font-headline">Precision Curator</h1>
+<p class="text-[10px] uppercase tracking-[0.05rem] text-on-surface-variant font-label mt-1">Asset Management</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-surface-container-lowest text-primary font-bold rounded-l-lg translate-x-1 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-medium">Assets</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">cloud_upload</span>
+<span class="text-sm font-medium">Uploads</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">folder_special</span>
+<span class="text-sm font-medium">Collections</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">archive</span>
+<span class="text-sm font-medium">Archive</span>
+</a>
+</nav>
+<div class="px-4 mt-auto space-y-4">
+<button class="w-full signature-gradient text-on-primary py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Project
+            </button>
+<div class="pt-4 border-t border-outline-variant/15 space-y-1">
+<a class="flex items-center gap-3 px-2 py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">help</span>
+<span class="text-xs font-label uppercase tracking-wider">Support</span>
+</a>
+<a class="flex items-center gap-3 px-2 py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="text-xs font-label uppercase tracking-wider">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Stage -->
+<main class="md:ml-64 min-h-screen">
+<!-- Top Navigation -->
+<header class="flex justify-between items-center w-full px-8 py-4 sticky top-0 z-30 bg-surface/80 backdrop-blur-md">
+<div class="flex items-center gap-4">
+<div class="md:hidden font-headline font-extrabold text-primary text-xl">PC.</div>
+<div class="hidden md:flex bg-surface-container-low px-4 py-2 rounded-lg items-center gap-3 w-80">
+<span class="material-symbols-outlined text-on-surface-variant text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-outline" placeholder="Find assets or projects..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center gap-6">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 text-sm" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors text-sm" href="#">Upload</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors text-sm" href="#">Files</a>
+</div>
+<div class="h-6 w-px bg-outline-variant/20 hidden lg:block"></div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-1">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors p-1">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high ring-1 ring-outline-variant/30">
+<img alt="User profile" data-alt="Close up portrait of a professional male curator with a clean modern aesthetic against a neutral studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMn1BMvWqrnEAsI6yIj_O5nHhni8RAqCBpcGirJYE6nq1BXoyLJ45t5s_xG1KdU-MY5-AVj-7ZSFbUe3nfbzR1a6eErfA19t2H53XwvjT_GnAofy6j-hNarkzquTvSmRBRomn5BB9ymHIqaulceFn1I9qR78NqPBnL0iZ6wGqW2hjQS3pGPoxKQjFlj81FsDD-J8G8-CSwPAxuu9TdUppEh7dJxAp_d0j1yfb7iag_r1iIZxEAGE5yas1NErG73Me2RRrIhH96JXU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="mb-10">
+<h2 class="font-headline text-3xl font-extrabold text-on-surface tracking-tight">Workspace Overview</h2>
+<p class="text-on-surface-variant mt-2 font-body">Manage your architectural archives and creative naming queues.</p>
+</div>
+<!-- Summary Cards Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<div class="bg-surface-container-lowest p-6 rounded-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+</div>
+<p class="text-[11px] uppercase tracking-wider font-semibold text-on-surface-variant mb-1 font-label">Ready for Naming</p>
+<h3 class="text-4xl font-headline font-extrabold text-primary">124</h3>
+<div class="mt-4 flex items-center gap-2 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-sm">arrow_upward</span>
+<span>12% since yesterday</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-lg relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+</div>
+<p class="text-[11px] uppercase tracking-wider font-semibold text-on-surface-variant mb-1 font-label">Processed</p>
+<h3 class="text-4xl font-headline font-extrabold text-on-surface">3,892</h3>
+<div class="mt-4 flex items-center gap-2 text-xs font-medium text-on-surface-variant">
+<span>98.2% Accuracy rate</span>
+</div>
+</div>
+<div class="signature-gradient p-6 rounded-lg relative overflow-hidden text-on-primary shadow-xl">
+<div class="absolute bottom-0 right-0 p-4 opacity-20">
+<span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1;">database</span>
+</div>
+<p class="text-[11px] uppercase tracking-wider font-semibold opacity-80 mb-1 font-label">Total Files</p>
+<h3 class="text-4xl font-headline font-extrabold">12.4k</h3>
+<p class="mt-4 text-xs font-medium opacity-90">Storage: 45.2 GB / 100 GB</p>
+<div class="w-full bg-white/20 h-1.5 mt-2 rounded-full overflow-hidden">
+<div class="bg-white h-full" style="width: 45%;"></div>
+</div>
+</div>
+</div>
+<!-- Secondary Layout: Recent Uploads & Quick Links -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<!-- Data Table: Recent Uploads -->
+<div class="lg:col-span-3">
+<div class="flex items-center justify-between mb-6">
+<h4 class="font-headline text-xl font-bold">Recent Uploads</h4>
+<button class="text-primary font-bold text-sm hover:underline decoration-2 underline-offset-4">View All</button>
+</div>
+<div class="space-y-2">
+<!-- Table Header -->
+<div class="grid grid-cols-12 px-4 py-2 bg-surface-container-low rounded-t-lg">
+<div class="col-span-6 text-[10px] uppercase tracking-[0.05rem] font-label text-on-surface-variant">Asset Name / ID</div>
+<div class="col-span-3 text-[10px] uppercase tracking-[0.05rem] font-label text-on-surface-variant text-center">Status</div>
+<div class="col-span-3 text-[10px] uppercase tracking-[0.05rem] font-label text-on-surface-variant text-right">Date Added</div>
+</div>
+<!-- Data Rows -->
+<div class="grid grid-cols-12 items-center px-4 py-4 bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-200 group cursor-pointer">
+<div class="col-span-6 flex items-center gap-4">
+<div class="w-10 h-10 bg-surface-container-high rounded overflow-hidden flex-shrink-0">
+<img alt="Building" data-alt="Modern architectural glass building facade with geometric patterns and bright blue sky reflection" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj2MNNIyc4Xd2yZ1dsx4_N7R1rLHTOHgNCqqZedizCMI-SKhKD4K8W0byJdDTZ6o7YN6t2NZh1Hhfd8L-GgUkOdkPoLLjUbUVBoITvERnH-qU-V1S9I8FvSdX4xcc311LA6KTvvcCPCQodg2qc4gZmMjR7S8HAJuOCkdCosFZMc_Z3bV2E5zYkMgZzc5xgWeGkpJiXgKH9UGRnlfgtSPwTxq4eNa0Ov0wTcsPc8vQMDoNfHtC7-x0HvQIQhfUcxuZaVpSBNyeXtnw"/>
+</div>
+<div>
+<p class="text-sm font-semibold font-body group-hover:text-primary transition-colors">ARCH_NYC_V72_External.jpg</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-label">Architecture / RAW</p>
+</div>
+</div>
+<div class="col-span-3 flex justify-center">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Naming Queue</span>
+</div>
+<div class="col-span-3 text-right">
+<p class="text-xs font-medium text-on-surface-variant">2 mins ago</p>
+</div>
+</div>
+<div class="grid grid-cols-12 items-center px-4 py-4 bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-200 group cursor-pointer">
+<div class="col-span-6 flex items-center gap-4">
+<div class="w-10 h-10 bg-surface-container-high rounded overflow-hidden flex-shrink-0">
+<img alt="Office" data-alt="Minimalist luxury office interior with high-end furniture and natural light through large windows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAES_W2lqXvgOuPWlkq2Gv1XhOtICVxY7N0879IJmzCg7jbAj-leo7rF5_kQbCaJAO8dUpJCMpzZdcenDgdbmvk3yNwRzABoiffu1HAE-L0R9eTCj9tA2GF4jkLo-A4IEE_BPT2JEPfeVSZVSr9KmQBeN8gUAzs5WU5Ehc7NgnzXkKjwUFn6Ho1M_GIDiG3W-kFpRZmmUvEhh_RHAya6j8YFEfcps-8ILgjq3-nJj5hPjWEsDfpn2Tcrj4KTM-9ejDCi6YknTCWyt0"/>
+</div>
+<div>
+<p class="text-sm font-semibold font-body group-hover:text-primary transition-colors">INT_SOHO_Lounge_Final.png</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-label">Interior / Master</p>
+</div>
+</div>
+<div class="col-span-3 flex justify-center">
+<span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Processed</span>
+</div>
+<div class="col-span-3 text-right">
+<p class="text-xs font-medium text-on-surface-variant">45 mins ago</p>
+</div>
+</div>
+<div class="grid grid-cols-12 items-center px-4 py-4 bg-surface-container-lowest hover:bg-surface-container-low transition-colors duration-200 group cursor-pointer">
+<div class="col-span-6 flex items-center gap-4">
+<div class="w-10 h-10 bg-surface-container-high rounded overflow-hidden flex-shrink-0">
+<img alt="Concrete" data-alt="Brutalist concrete architecture detail showing sharp shadows and textured surface patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJCOAKt-pGxrBi97fzgp71lO-sfdSYgtXfxlfOjGIEFrLkynCksRzWQ9NH5jkOUMGHz1umvWYgA1WDVeyf1qMCtuNugq1x9jaDDy444Sf4OaxGHRipvwCQCmsF_c2qI7EaTv6IgQWI5-FG0dX7PQOQO5pIyFLZpwZ6igGvnhhdtlageiLngnulj0ua-4w_nNeufNhord-mmk4FDzHTSOWkGxxnzAUA7QJj8vpOrOnIomKBPerqa3e0M9GokKo_xUfr8VTtryJv3IY"/>
+</div>
+<div>
+<p class="text-sm font-semibold font-body group-hover:text-primary transition-colors">BRUT_LON_001.exr</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-label">Texture / HDRI</p>
+</div>
+</div>
+<div class="col-span-3 flex justify-center">
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">In Progress</span>
+</div>
+<div class="col-span-3 text-right">
+<p class="text-xs font-medium text-on-surface-variant">2 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Actions / Sidebar Panel -->
+<div class="space-y-6">
+<h4 class="font-headline text-xl font-bold">Quick Links</h4>
+<div class="space-y-3">
+<button class="w-full flex items-center gap-4 p-4 bg-surface-container-low hover:bg-surface-container-high transition-colors text-left group">
+<div class="w-10 h-10 bg-surface-container-lowest flex items-center justify-center rounded shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<p class="text-sm font-bold group-hover:text-primary transition-colors">AI Naming Suggester</p>
+<p class="text-[10px] text-on-surface-variant font-label uppercase">Smart Tagging</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-4 p-4 bg-surface-container-low hover:bg-surface-container-high transition-colors text-left group">
+<div class="w-10 h-10 bg-surface-container-lowest flex items-center justify-center rounded shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">batch_prediction</span>
+</div>
+<div>
+<p class="text-sm font-bold group-hover:text-primary transition-colors">Batch Renaming</p>
+<p class="text-[10px] text-on-surface-variant font-label uppercase">Efficiency Tool</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-4 p-4 bg-surface-container-low hover:bg-surface-container-high transition-colors text-left group">
+<div class="w-10 h-10 bg-surface-container-lowest flex items-center justify-center rounded shadow-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div>
+<p class="text-sm font-bold group-hover:text-primary transition-colors">Quality Assurance</p>
+<p class="text-[10px] text-on-surface-variant font-label uppercase">Metadata Review</p>
+</div>
+</button>
+</div>
+<!-- Pinned Collection -->
+<div class="mt-10 p-5 bg-surface-container-high rounded-lg relative overflow-hidden group border border-outline-variant/10">
+<div class="relative z-10">
+<h5 class="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-4">Pinned Collection</h5>
+<h6 class="font-headline font-extrabold text-lg mb-2">NYC Highline Project 2024</h6>
+<div class="flex items-center gap-2 mb-4">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full ring-2 ring-white overflow-hidden bg-slate-300">
+<img alt="Team member" data-alt="Portrait of a female creative professional in a workspace setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnuiGWljNbm_FlYKVDgw6FvfRkwVJg93EndW_Qzn9BxUsJ69bqq60IZfbYi76hNlnA6dm8TeQpEjdSfNsWSEt5iQ7sAI1ZMfLb_W54c2gMwumIrRPtx0lDF14KkLJTAMplOI-jFYOfYqk202ePSyyTt61ee4ca2s9vjrjQRMS5ebjbfH8A5eECdIwaeQ3Zd5ACbbc91miesCsVmHzPuPuJeU5xiNvC7almbZuVH0-FGjecb0MSb7nGDMSc-0vcMocIbLud3TMHngM"/>
+</div>
+<div class="w-6 h-6 rounded-full ring-2 ring-white overflow-hidden bg-slate-400">
+<img alt="Team member" data-alt="Portrait of a male architect with glasses in a minimalist architectural studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbzjlrw-fz3jraXGvSUzQh4Sh9Zt4U0dIdW2lz6-kemIhZoYWQSRZQMLAx6lGOyjSnEcjpaEfG2NyyAviyI5yJQIeJw_WijSuOyGRWTVP2DSjNCUlK4T5Afvqespgf7JdaCUni2Y-kesqPN8S7UAZNqiMgs0UFN7FIt5J3YWnh92RD6X7AQUGT9Gz2ydg_VIHYJvPxK7L5L7HUYUtZlAupQQSLIv_UaIC8qKuh4KNF3gEGMwlf3N51kWWzR3LTviGoWnqOyUIxevM"/>
+</div>
+</div>
+<span class="text-[10px] font-bold text-primary">+3 Contributors</span>
+</div>
+<button class="text-xs font-bold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                Open Workspace
+                                <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-9xl">apartment</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container-lowest flex justify-around items-center py-4 z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-label uppercase font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-label uppercase">Assets</span>
+</button>
+<button class="flex flex-col items-center gap-1 -mt-8 bg-primary p-3 rounded-full text-white shadow-xl">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">cloud_upload</span>
+<span class="text-[10px] font-label uppercase">Upload</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-label uppercase">Settings</span>
+</button>
+</nav>
+</body></html>
