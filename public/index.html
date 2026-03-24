@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion Renamer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="topnav">
+    <div class="nav-brand">Motion Renamer</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="upload">📤 Upload</button>
+      <button class="nav-tab" data-tab="table">📊 Table</button>
+      <button class="nav-tab" data-tab="files">📁 Files</button>
+    </div>
+    <button class="nav-settings" id="settingsBtn" title="Settings">⚙️</button>
+  </nav>
+
+  <main>
+    <!-- Upload Tab -->
+    <section class="tab-content active" id="tab-upload">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-icon">📤</div>
+        <h2>Drop images &amp; videos here</h2>
+        <p class="drop-zone-formats">JPG, PNG, GIF, WEBP, MP4, MOV, AVI, WEBM</p>
+        <button class="btn btn-primary" id="browseBtn">Browse Files</button>
+        <input type="file" id="fileInput" multiple accept="image/*,video/*" hidden>
+      </div>
+
+      <div class="upload-actions" id="uploadActions" style="display:none;">
+        <button class="btn btn-accent" id="analyzeAllBtn">🔍 Analyze All</button>
+      </div>
+
+      <div class="upload-list" id="uploadList"></div>
+    </section>
+
+    <!-- Table Tab -->
+    <section class="tab-content" id="tab-table">
+      <div class="table-toolbar">
+        <input type="text" class="search-input" id="tableSearch" placeholder="Search files...">
+        <button class="btn btn-accent" id="downloadAllBtn">📦 Download All (ZIP)</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Preview</th>
+              <th>Original Name</th>
+              <th>Source</th>
+              <th>Format</th>
+              <th>Messaging</th>
+              <th>Hook</th>
+              <th>Product</th>
+              <th>Talent</th>
+              <th>Gender</th>
+              <th>Length</th>
+              <th>Offer</th>
+              <th>LP</th>
+              <th>Audio</th>
+              <th>Proposed Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Files Tab -->
+    <section class="tab-content" id="tab-files">
+      <div class="files-toolbar">
+        <input type="text" class="search-input" id="filesSearch" placeholder="Search files...">
+        <div class="view-toggle">
+          <button class="view-btn active" data-view="grid" title="Grid view">▦</button>
+          <button class="view-btn" data-view="list" title="List view">☰</button>
+        </div>
+      </div>
+      <div class="files-grid" id="filesGrid"></div>
+    </section>
+  </main>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="modal-close" id="closeSettings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label>Sources</label>
+          <div class="chips" id="sourceChips"></div>
+          <div class="chip-add">
+            <input type="text" id="newSource" placeholder="Add source (e.g. s-name)">
+            <button class="btn btn-sm" id="addSourceBtn">Add</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label>Products</label>
+          <div class="chips" id="productChips"></div>
+          <div class="chip-add">
+            <input type="text" id="newProduct" placeholder="Add product (e.g. p-name)">
+            <button class="btn btn-sm" id="addProductBtn">Add</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label>Default Source</label>
+          <select id="defaultSource" class="field-select"></select>
+        </div>
+        <div class="setting-group">
+          <label>Default Product</label>
+          <select id="defaultProduct" class="field-select"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="saveSettingsBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div class="modal-overlay" id="lightboxModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="lightboxTitle">File Preview</h2>
+        <button class="modal-close" id="closeLightbox">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="lightbox-preview" id="lightboxPreview"></div>
+        <div class="lightbox-info" id="lightboxInfo"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="lightboxDownload">Download Renamed</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
