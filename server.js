@@ -285,6 +285,20 @@ Return ONLY valid JSON, no markdown, no explanation.`;
   }
 });
 
+// GET /health
+app.get('/health', (req, res) => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
+  const jsonFiles = fs.readdirSync(UPLOADS_DIR).filter(f => f.endsWith('.json'));
+  let fileCount = 0;
+  for (const f of jsonFiles) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(UPLOADS_DIR, f), 'utf-8'));
+      if (findFileById(data.id)) fileCount++;
+    } catch {}
+  }
+  res.json({ status: 'ok', version: pkg.version, uptime: process.uptime(), fileCount });
+});
+
 // GET /preview/:id
 app.get('/preview/:id', (req, res) => {
   const filePath = findFileById(req.params.id);
